@@ -124,8 +124,8 @@ export default function DashboardPage() {
     [cumulativeGpaSummaries],
   );
   const gradeDistribution = useMemo(
-    () => buildGradeDistribution(enrollments),
-    [enrollments],
+    () => buildGradeDistribution(effectiveEnrollmentResult.effectiveEnrollments),
+    [effectiveEnrollmentResult.effectiveEnrollments],
   );
 
   useEffect(() => {
@@ -240,11 +240,13 @@ export default function DashboardPage() {
         <div className="mb-3">
           <h2 className="text-base font-semibold">Phân tích học tập</h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <GpaTrendChart data={gpaTrendData} />
-          <CreditProgressChart data={creditTrendData} />
-          <TermPerformanceChart data={gpaTrendData} />
-          <GradeDistributionChart data={gradeDistribution} />
+        <div className="grid gap-4">
+          <div className="min-w-0"><GpaTrendChart data={gpaTrendData} /></div>
+          <div className="grid gap-4 md:grid-cols-2 min-w-0">
+            <div className="min-w-0"><CreditProgressChart data={creditTrendData} /></div>
+            <div className="min-w-0"><TermPerformanceChart data={gpaTrendData} /></div>
+          </div>
+          <div className="min-w-0"><GradeDistributionChart data={gradeDistribution} /></div>
         </div>
       </section>
 

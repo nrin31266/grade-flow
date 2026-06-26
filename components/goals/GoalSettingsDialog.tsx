@@ -68,26 +68,17 @@ export function GoalSettingsDialog({
   function handleSave() {
     const parsedGpa4 = targetGpa4 === "" ? null : Number(targetGpa4);
     const parsedGpa10 = targetGpa10 === "" ? null : Number(targetGpa10);
-    const parsedCredits =
-      targetCredits === "" ? null : Number(targetCredits);
-    const parsedImproveGpa4 =
-      targetImproveGpa4 === "" ? 4.0 : Number(targetImproveGpa4);
-    const parsedImproveScore10 =
-      targetImproveScore10 === "" ? 8.5 : Number(targetImproveScore10);
+    const parsedCredits = targetCredits === "" ? null : Number(targetCredits);
+    const parsedImproveGpa4 = targetImproveGpa4 === "" ? 4.0 : Number(targetImproveGpa4);
+    const parsedImproveScore10 = targetImproveScore10 === "" ? 8.5 : Number(targetImproveScore10);
 
     onSaveGoal({
       targetGpa4:
-        parsedGpa4 !== null &&
-        !isNaN(parsedGpa4) &&
-        parsedGpa4 >= 0 &&
-        parsedGpa4 <= 4
+        parsedGpa4 !== null && !isNaN(parsedGpa4) && parsedGpa4 >= 0 && parsedGpa4 <= 4
           ? parsedGpa4
           : null,
       targetGpa10:
-        parsedGpa10 !== null &&
-        !isNaN(parsedGpa10) &&
-        parsedGpa10 >= 0 &&
-        parsedGpa10 <= 10
+        parsedGpa10 !== null && !isNaN(parsedGpa10) && parsedGpa10 >= 0 && parsedGpa10 <= 10
           ? parsedGpa10
           : null,
       targetGraduationCredits:
@@ -96,15 +87,11 @@ export function GoalSettingsDialog({
           : null,
       preferredTargetScale: preferredScale as AcademicGoal["preferredTargetScale"],
       assumedImprovementGpa4:
-        !isNaN(parsedImproveGpa4) &&
-        parsedImproveGpa4 >= 0 &&
-        parsedImproveGpa4 <= 4
+        !isNaN(parsedImproveGpa4) && parsedImproveGpa4 >= 0 && parsedImproveGpa4 <= 4
           ? parsedImproveGpa4
           : 4.0,
       assumedImprovementScore10:
-        !isNaN(parsedImproveScore10) &&
-        parsedImproveScore10 >= 0 &&
-        parsedImproveScore10 <= 10
+        !isNaN(parsedImproveScore10) && parsedImproveScore10 >= 0 && parsedImproveScore10 <= 10
           ? parsedImproveScore10
           : 8.5,
       note: note.trim() || undefined,
@@ -122,109 +109,87 @@ export function GoalSettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>Đặt mục tiêu học tập</DialogTitle>
+          <DialogTitle>Chỉnh mục tiêu học tập</DialogTitle>
           <DialogDescription>
-            Thiết lập mục tiêu GPA và tín chỉ để GradeFlow ước tính điểm cần
-            đạt trong các học kỳ còn lại.
+            Thiết lập mục tiêu GPA và tín chỉ để GradeFlow ước tính mức điểm cần đạt.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-2">
-          {/* GPA hệ 4 */}
-          <div className="grid gap-2">
-            <Label htmlFor="target-gpa4">Mục tiêu GPA hệ 4</Label>
-            <Input
-              id="target-gpa4"
-              type="number"
-              min={0}
-              max={4}
-              step={0.01}
-              placeholder="Ví dụ: 3.60"
-              value={targetGpa4}
-              onChange={(e) => setTargetGpa4(e.target.value)}
-            />
+          {/* Hàng 1: GPA 4 + GPA 10 */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="target-gpa4">Mục tiêu GPA hệ 4</Label>
+              <Input
+                id="target-gpa4"
+                type="number"
+                min={0}
+                max={4}
+                step={0.01}
+                placeholder="Ví dụ: 3.60"
+                value={targetGpa4}
+                onChange={(e) => setTargetGpa4(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="target-gpa10">Mục tiêu GPA hệ 10</Label>
+              <Input
+                id="target-gpa10"
+                type="number"
+                min={0}
+                max={10}
+                step={0.01}
+                placeholder="Ví dụ: 8.50"
+                value={targetGpa10}
+                onChange={(e) => setTargetGpa10(e.target.value)}
+              />
+            </div>
           </div>
 
-          {/* GPA hệ 10 */}
-          <div className="grid gap-2">
-            <Label htmlFor="target-gpa10">Mục tiêu GPA hệ 10</Label>
-            <Input
-              id="target-gpa10"
-              type="number"
-              min={0}
-              max={10}
-              step={0.01}
-              placeholder="Ví dụ: 8.50"
-              value={targetGpa10}
-              onChange={(e) => setTargetGpa10(e.target.value)}
-            />
-          </div>
-
-          {/* Tín chỉ tốt nghiệp */}
-          <div className="grid gap-2">
-            <Label htmlFor="target-credits">
-              Tín chỉ tốt nghiệp mục tiêu
-            </Label>
-            <Input
-              id="target-credits"
-              type="number"
-              min={1}
-              placeholder={
-                profileGraduationCredits
-                  ? String(profileGraduationCredits)
-                  : "Nhập số tín chỉ"
-              }
-              value={targetCredits}
-              onChange={(e) => setTargetCredits(e.target.value)}
-            />
-            {profileGraduationCredits ? (
+          {/* Hàng 2: TC + Thang ưu tiên */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="target-credits">Tín chỉ tốt nghiệp mục tiêu</Label>
+              <Input
+                id="target-credits"
+                type="number"
+                min={1}
+                placeholder={profileGraduationCredits ? String(profileGraduationCredits) : "Nhập số tín chỉ"}
+                value={targetCredits}
+                onChange={(e) => setTargetCredits(e.target.value)}
+              />
+              {profileGraduationCredits && (
+                <p className="text-xs text-muted-foreground">
+                  Để trống = mặc định theo hồ sơ: {profileGraduationCredits} TC
+                </p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="preferred-scale">Thang ưu tiên</Label>
+              <Select value={preferredScale} onValueChange={setPreferredScale}>
+                <SelectTrigger id="preferred-scale">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gpa4">Hệ 4</SelectItem>
+                  <SelectItem value="gpa10">Hệ 10</SelectItem>
+                  <SelectItem value="both">Cả hai</SelectItem>
+                </SelectContent>
+              </Select>
               <p className="text-xs text-muted-foreground">
-                Để trống để dùng mục tiêu trong hồ sơ:{" "}
-                {profileGraduationCredits} tín chỉ.
+                Hai mục tiêu được đánh giá độc lập.
               </p>
-            ) : null}
+            </div>
           </div>
 
-          {/* Thang ưu tiên */}
-          <div className="grid gap-2">
-            <Label htmlFor="preferred-scale">Thang mục tiêu ưu tiên</Label>
-            <Select
-              value={preferredScale}
-              onValueChange={setPreferredScale}
-            >
-              <SelectTrigger id="preferred-scale">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="gpa4">Hệ 4</SelectItem>
-                <SelectItem value="gpa10">Hệ 10</SelectItem>
-                <SelectItem value="both">Cả hai</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Ghi chú */}
-          <div className="grid gap-2">
-            <Label htmlFor="goal-note">Ghi chú</Label>
-            <Textarea
-              id="goal-note"
-              placeholder="Ghi chú cá nhân (không bắt buộc)"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              rows={2}
-            />
-          </div>
-
-          {/* Tùy chọn nâng cao: Giả định cải thiện */}
+          {/* Nâng cao — accordion */}
           <details className="group rounded-lg border border-dashed border-slate-200 px-3 py-2 dark:border-slate-800">
             <summary className="cursor-pointer text-xs font-medium text-muted-foreground hover:text-foreground">
-              Tùy chọn nâng cao — giả định cải thiện
+              Tùy chọn nâng cao
             </summary>
             <div className="mt-3 grid gap-3">
               <div className="grid gap-2">
-                <Label htmlFor="improve-gpa4">
-                  Giả định điểm hệ 4 sau cải thiện
-                </Label>
+                <Label htmlFor="improve-gpa4">Giả định GPA hệ 4 sau cải thiện</Label>
                 <Input
                   id="improve-gpa4"
                   type="number"
@@ -235,15 +200,9 @@ export function GoalSettingsDialog({
                   value={targetImproveGpa4}
                   onChange={(e) => setTargetImproveGpa4(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">
-                  GradeFlow dùng giả định này để ước tính nếu bạn học cải thiện
-                  một môn điểm thấp. Đây không phải điểm tự động áp dụng.
-                </p>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="improve-score10">
-                  Giả định điểm hệ 10 sau cải thiện
-                </Label>
+                <Label htmlFor="improve-score10">Giả định điểm hệ 10 sau cải thiện</Label>
                 <Input
                   id="improve-score10"
                   type="number"
@@ -254,10 +213,16 @@ export function GoalSettingsDialog({
                   value={targetImproveScore10}
                   onChange={(e) => setTargetImproveScore10(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">
-                  GradeFlow dùng giả định này để ước tính nếu bạn học cải thiện
-                  một môn điểm thấp. Đây không phải điểm tự động áp dụng.
-                </p>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="goal-note">Ghi chú</Label>
+                <Textarea
+                  id="goal-note"
+                  placeholder="Ghi chú cá nhân (không bắt buộc)"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  rows={2}
+                />
               </div>
             </div>
           </details>
@@ -268,11 +233,7 @@ export function GoalSettingsDialog({
             Xóa mục tiêu
           </Button>
           <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Hủy
             </Button>
             <Button type="button" onClick={handleSave}>

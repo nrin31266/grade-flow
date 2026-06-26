@@ -1,6 +1,6 @@
 export const chartColors = {
   gpaTerm: "#0ea5e9",         // sky-500
-  gpaCumulative: "#2563eb",   // blue-600
+  gpaCumulative: "#ef4444",   // red-500
   creditsGpa: "#38bdf8",      // sky-400
   creditsEarned: "#22c55e",   // green-500
   creditsPending: "#f59e0b",  // amber-500

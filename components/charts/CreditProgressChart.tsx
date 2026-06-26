@@ -1,118 +1,77 @@
 "use client";
 
 import {
-  ComposedChart,
+  BarChart,
   Bar,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
+  LabelList,
 } from "recharts";
 
 import type { CreditTrendPoint } from "@/lib/dashboard-charts";
 import { chartColors } from "@/lib/chart-colors";
 import { formatCredits } from "@/lib/number-format";
+import { ChartCard } from "@/components/charts/ChartCard";
 
 type CreditProgressChartProps = {
   data: CreditTrendPoint[];
 };
 
 export function CreditProgressChart({ data }: CreditProgressChartProps) {
-  const validData = data.filter(
-    (d) => d.earnedCredits > 0 || d.cumulativeEarnedCredits > 0,
-  );
+  const validData = data.filter((d) => d.earnedCredits > 0);
 
   if (validData.length === 0) {
     return (
-      <div className="rounded-xl border bg-card p-5 shadow-sm">
-        <p className="text-sm font-semibold">Tín chỉ theo học kỳ</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Tín chỉ đạt từng kỳ và lũy kế theo thời gian.
-        </p>
+      <ChartCard title="Tín chỉ đạt theo học kỳ" description="Số tín chỉ đạt được trong từng học kỳ.">
         <div className="flex h-[240px] items-center justify-center rounded-lg border border-dashed bg-muted/40">
-          <p className="text-sm text-muted-foreground">
-            Chưa có dữ liệu tín chỉ.
-          </p>
+          <p className="text-sm text-muted-foreground">Chưa có đủ dữ liệu tín chỉ theo học kỳ.</p>
         </div>
-      </div>
+      </ChartCard>
     );
   }
 
-  return (
-    <div className="rounded-xl border bg-card p-5 shadow-sm">
-      <p className="text-sm font-semibold">Tín chỉ theo học kỳ</p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Tín chỉ đạt từng kỳ và lũy kế theo thời gian.
-      </p>
+  const latest = validData[validData.length - 1];
+  const totalEarned = validData.reduce((s, d) => s + d.earnedCredits, 0);
+  const maxCredits = Math.max(...validData.map((d) => d.earnedCredits));
 
-      <div className="mt-3 h-[260px] min-w-0">
+  return (
+    <ChartCard
+      title="Tín chỉ đạt theo học kỳ"
+      description="Số tín chỉ đạt được trong từng học kỳ."
+      summary={
+        <>
+          <span className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-xs font-medium">
+            Đã tích lũy: <span className="font-semibold">{formatCredits(Math.round(totalEarned))} tín chỉ</span>
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-xs font-medium">
+            Kỳ gần nhất: <span className="font-semibold text-emerald-600">{formatCredits(Math.round(latest.earnedCredits))} tín chỉ</span>
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-xs text-muted-foreground">
+            Kỳ cao nhất: {formatCredits(Math.round(maxCredits))} tín chỉ
+          </span>
+        </>
+      }
+    >
+      <div className="h-[260px] min-h-[260px] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart
-            data={validData}
-            margin={{ top: 8, right: 12, left: -10, bottom: 5 }}
-          >
-            <CartesianGrid
-              stroke={chartColors.grid}
-              strokeDasharray="3 3"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="shortTermName"
-              tick={{ fontSize: 11, fill: "#64748b" }}
-              axisLine={{ stroke: "#e2e8f0" }}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fontSize: 11, fill: "#64748b" }}
-              axisLine={false}
-              tickLine={false}
-            />
+          <BarChart data={validData} margin={{ top: 18, right: 12, left: -10, bottom: 5 }}>
+            <CartesianGrid stroke={chartColors.grid} strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="shortTermName" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} />
             <Tooltip
-              contentStyle={{
-                fontSize: 12,
-                borderRadius: 8,
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                padding: "8px 12px",
-              }}
-              formatter={(value) => [
-                typeof value === "number"
-                  ? formatCredits(Math.round(value))
-                  : "—",
-              ]}
+              contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", padding: "8px 12px" }}
+              formatter={(value) => [typeof value === "number" ? `${formatCredits(Math.round(value))} tín chỉ` : "—"]}
               labelFormatter={(label) => `Học kỳ: ${label}`}
             />
-            <Legend
-              formatter={(value: string) =>
-                value === "earnedCredits"
-                  ? "TC đạt kỳ"
-                  : "TC đạt lũy kế"
-              }
-              wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
-              iconType="circle"
-            />
-            <Bar
-              dataKey="earnedCredits"
-              name="earnedCredits"
-              fill={chartColors.creditsEarned}
-              radius={[4, 4, 0, 0]}
-              barSize={24}
-            />
-            <Line
-              type="monotone"
-              dataKey="cumulativeEarnedCredits"
-              name="cumulativeEarnedCredits"
-              stroke={chartColors.gpaCumulative}
-              strokeWidth={3}
-              dot={{ r: 3, fill: chartColors.gpaCumulative, strokeWidth: 0 }}
-              activeDot={{ r: 5, fill: chartColors.gpaCumulative, strokeWidth: 0 }}
-            />
-          </ComposedChart>
+            <Bar dataKey="earnedCredits" fill={chartColors.creditsEarned} radius={[4, 4, 0, 0]} barSize={28}>
+              <LabelList dataKey="earnedCredits" position="top" fontSize={12} fill="#64748b" formatter={(v) => (typeof v === "number" ? Math.round(v) : v)} />
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </ChartCard>
   );
 }
