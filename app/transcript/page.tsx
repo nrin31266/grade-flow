@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -202,8 +201,8 @@ export default function TranscriptPage() {
 
   return (
     <DashboardShell
-      title="Bảng điểm thật"
-      description="Kiểm tra bảng điểm theo học kỳ, GPA kỳ và các lượt học cần chú ý."
+      title="Bảng điểm"
+      description="Các môn bạn đã học hoặc đang học, được nhóm theo học kỳ thật."
       actions={
         <>
           <Button type="button" onClick={() => handleRequestAddEnrollment()}>
@@ -226,15 +225,10 @@ export default function TranscriptPage() {
         </>
       }
     >
-      {programCourses.length === 0 ? (
-        <div className="flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100 sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            Nên import chương trình học trước để GradeFlow liên kết điểm với môn
-            trong khung.
-          </span>
-          <Button asChild size="sm" variant="outline">
-            <Link href="/program">Mở chương trình học</Link>
-          </Button>
+      {programCourses.length === 0 && enrollments.length > 0 ? (
+        <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-200">
+          Chưa có kế hoạch học tập. Các môn sẽ được import dưới dạng ngoài chương
+          trình. Bạn vẫn tính GPA bình thường.
         </div>
       ) : null}
 

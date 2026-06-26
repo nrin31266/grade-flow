@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ProgramCourseImportDialog } from "@/components/courses/ProgramCourseImportDialog";
 import { TranscriptImportDialog } from "@/components/enrollments/TranscriptImportDialog";
@@ -133,6 +133,21 @@ export default function DashboardPage() {
       router.replace("/onboarding");
     }
   }, [isHydrated, profile, router]);
+
+  // Auto-open import dialog if user has no data at all (runs once after mount)
+  const hasOpenedImport = useRef(false);
+  useEffect(() => {
+    if (
+      !hasOpenedImport.current &&
+      isHydrated &&
+      profile &&
+      enrollments.length === 0 &&
+      programCourses.length === 0
+    ) {
+      hasOpenedImport.current = true;
+      setIsQuickImportDialogOpen(true);
+    }
+  }, [isHydrated, profile, enrollments.length, programCourses.length]);
 
   function handleImportProgramCourses(
     courses: StudyProgramCourse[],
@@ -271,18 +286,18 @@ export default function DashboardPage() {
         <div className="rounded-lg border bg-background px-4 py-3 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="text-base font-semibold">Chương trình học</h2>
+              <h2 className="text-base font-semibold">Kế hoạch học tập</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {allCourseStats.courseCount} học phần ·{" "}
-                {allCourseStats.totalCredits} tín chỉ trong khung.
+                {allCourseStats.totalCredits} tín chỉ trong kế hoạch.
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {dashboardDataStatus.programCoursesWithoutGradeCount} học phần
-                chưa có điểm hiệu lực.
+                chưa có điểm.
               </p>
             </div>
             <Button asChild size="sm" variant="outline">
-              <Link href="/program">Mở chương trình</Link>
+              <Link href="/program">Mở kế hoạch</Link>
             </Button>
           </div>
         </div>

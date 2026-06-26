@@ -157,9 +157,9 @@ export function TranscriptImportDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-6xl">
         <DialogHeader>
-          <DialogTitle>Import bảng điểm thật</DialogTitle>
+          <DialogTitle>Import bảng điểm</DialogTitle>
           <DialogDescription>
-            Dán JSON bảng điểm thật đã chuẩn hóa.
+            Dán JSON bảng điểm đã được AI chuẩn hóa. Dữ liệu này dùng để tính GPA.
           </DialogDescription>
         </DialogHeader>
 
@@ -212,28 +212,35 @@ export function TranscriptImportDialog({
             <summary className="cursor-pointer text-xs font-medium text-sky-700 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200">
               🤖 Hướng dẫn tạo JSON bằng AI (DeepSeek / ChatGPT / Gemini)
             </summary>
-            <ol className="mt-3 space-y-1.5 text-xs text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">1</span>
-                <span>Bấm nút <strong className="text-foreground">🤖 Copy prompt cho AI</strong> bên dưới để copy hướng dẫn.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">2</span>
-                <span>Mở DeepSeek / ChatGPT / Gemini và <strong className="text-foreground">dán prompt</strong> vào.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">3</span>
-                <span>Copy nội dung <strong className="text-foreground">bảng điểm</strong> từ cổng thông tin đào tạo / ảnh chụp / PDF và gửi cho AI.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">4</span>
-                <span>AI trả về JSON — bấm <strong className="text-foreground">Copy</strong>, quay lại đây và <strong className="text-foreground">dán vào ô JSON</strong>.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">5</span>
-                <span>Bấm <strong className="text-foreground">Kiểm tra</strong> để xác nhận dữ liệu hợp lệ, rồi <strong className="text-foreground">Import</strong>.</span>
-              </li>
-            </ol>
+            <div className="mt-3 space-y-2 text-xs text-muted-foreground">
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">1</span>
+                <span>Mở trang <strong className="text-foreground">bảng điểm cá nhân</strong> trên cổng thông tin đào tạo của trường.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">2</span>
+                <span>Lấy dữ liệu bảng điểm: <strong className="text-foreground">Copy text</strong> (Ctrl+C) nếu được, hoặc chụp ảnh màn hình, hoặc <strong className="text-foreground">Ctrl+P</strong> → Lưu thành PDF (trên điện thoại dùng In → Lưu PDF).</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">3</span>
+                <span>Bấm nút <strong className="text-foreground">🤖 Copy prompt cho AI</strong> bên dưới.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">4</span>
+                <span>Mở DeepSeek / ChatGPT / Gemini, <strong className="text-foreground">dán prompt</strong>, gửi kèm dữ liệu bảng điểm (text/ảnh/PDF).</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">5</span>
+                <span>AI trả về JSON — <strong className="text-foreground">copy</strong> toàn bộ, dán vào ô JSON bên trên.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">6</span>
+                <span>Bấm <strong className="text-foreground">Kiểm tra</strong> → <strong className="text-foreground">Import</strong>.</span>
+              </div>
+              <p className="mt-1 rounded bg-white/60 px-2 py-1 text-xs text-amber-700 dark:bg-slate-900/60 dark:text-amber-300">
+                ⚠️ GradeFlow không tự đọc ảnh/PDF. Bạn tự dùng AI bên ngoài. Dữ liệu không gửi lên máy chủ.
+              </p>
+            </div>
           </details>
 
           {/* Thanh công cụ */}
@@ -280,12 +287,7 @@ export function TranscriptImportDialog({
               )}
               {warnings.length > 0 && (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
-                  <p className="font-medium">⚠️ Cảnh báo:</p>
-                  <ul className="mt-1 list-disc pl-4 text-xs">
-                    {warnings.map((w, i) => (
-                      <li key={i}>{w.row ? `Dòng ${w.row}: ` : ""}{w.message}</li>
-                    ))}
-                  </ul>
+                  ⚠️ {warnings.length} học phần không tìm thấy tương ứng trong chương trình, sẽ import như học phần ngoài chương trình.
                 </div>
               )}
             </div>
@@ -376,7 +378,7 @@ export function TranscriptImportDialog({
               ? "Import tất cả"
               : duplicateStrategy === "replace"
                 ? "Import và cập nhật"
-                : "Import lượt học mới"}
+                : "Import bảng điểm"}
           </Button>
         </DialogFooter>
       </DialogContent>

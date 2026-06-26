@@ -24,8 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { resolveEffectiveEnrollments } from "@/lib/effective-enrollments";
-import type { ProgramCourseImportSummary } from "@/lib/program-course-import-merge";
-import {
+import type { ProgramCourseImportSummary } from "@/lib/program-course-import-merge";import { matchTranscriptCourseToProgramCourse } from "@/lib/transcript-course-match";import {
   defaultProgramCourseFilters,
   filterProgramCourses,
   getAvailablePlannedTerms,
@@ -220,9 +219,40 @@ export default function ProgramPage() {
     summary: ProgramCourseImportSummary,
   ) {
     setProgramCoursesAndSave(courses);
-    setFeedback(
-      `Đã xử lý ${summary.totalParsed} học phần: thêm ${summary.added}, bỏ qua ${summary.skipped}, cập nhật ${summary.replaced}.`,
-    );
+
+    // Match existing enrollments with newly imported program courses
+    let matchedCount = 0;
+    const updatedEnrollments = enrollments.map((enrollment) => {
+      // Skip if already matched
+      if (enrollment.programCourseId) return enrollment;
+
+      const match = matchTranscriptCourseToProgramCourse(
+        {
+          code: enrollment.code,
+          name: enrollment.name,
+          credits: enrollment.credits,
+        },
+        courses,
+      );
+
+      if (match.matchType !== "none" && match.programCourseId) {
+        matchedCount++;
+        return { ...enrollment, programCourseId: match.programCourseId };
+      }
+
+      return enrollment;
+    });
+
+    if (matchedCount > 0) {
+      setEnrollmentsAndSave(updatedEnrollments);
+      setFeedback(
+        `Đã xử lý ${summary.totalParsed} học phần: thêm ${summary.added}, bỏ qua ${summary.skipped}, cập nhật ${summary.replaced}. Đã liên kết ${matchedCount} lượt học với kế hoạch học tập.`,
+      );
+    } else {
+      setFeedback(
+        `Đã xử lý ${summary.totalParsed} học phần: thêm ${summary.added}, bỏ qua ${summary.skipped}, cập nhật ${summary.replaced}.`,
+      );
+    }
   }
 
   function handleAddCourse(course: StudyProgramCourse) {
@@ -290,8 +320,8 @@ export default function ProgramPage() {
 
   return (
     <DashboardShell
-      title="Chương trình học"
-      description="Quản lý học phần trong khung chương trình/kế hoạch đào tạo."
+      title="Kế hoạch học tập"
+      description="Danh sách học phần trong chương trình đào tạo, dùng để đối chiếu với bảng điểm và theo dõi môn còn thiếu."
       actions={
         <>
           <Button type="button" onClick={() => setIsProgramCourseDialogOpen(true)}>
@@ -302,7 +332,7 @@ export default function ProgramPage() {
             onClick={() => setIsProgramImportDialogOpen(true)}
             className="bg-sky-600 hover:bg-sky-700"
           >
-            📥 Import chương trình
+            📥 Import kế hoạch học tập
           </Button>
           <Button
             type="button"
@@ -372,6 +402,7 @@ export default function ProgramPage() {
         open={isProgramImportDialogOpen}
         onOpenChange={setIsProgramImportDialogOpen}
         existingCourses={programCourses}
+        existingEnrollments={enrollments}
         onImportCourses={handleImportProgramCourses}
       />
       <ProgramCourseDialog

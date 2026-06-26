@@ -14,8 +14,8 @@ type DashboardShellProps = {
 
 const navigationItems = [
   { label: "Bảng điều khiển", href: "/dashboard" },
-  { label: "Bảng điểm thật", href: "/transcript" },
-  { label: "Chương trình học", href: "/program" },
+  { label: "Bảng điểm", href: "/transcript" },
+  { label: "Kế hoạch học tập", href: "/program" },
 ];
 
 export function DashboardShell({

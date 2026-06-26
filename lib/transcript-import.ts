@@ -114,48 +114,49 @@ export const sampleTranscriptJson = JSON.stringify(
   2,
 );
 
-export const aiTranscriptPrompt = `Bạn là trợ lý trích xuất dữ liệu. Từ dữ liệu người dùng cung cấp (ảnh chụp bảng điểm, PDF từ hệ thống đào tạo, hoặc nội dung copy từ cổng thông tin đào tạo), hãy trích xuất thành JSON. CHỈ trả về JSON hợp lệ, không giải thích, không markdown.
+export const aiTranscriptPrompt = `Hãy đọc dữ liệu bảng điểm sau và chuyển thành JSON cho GradeFlow.
 
-Đây là BẢNG ĐIỂM THẬT, không phải chương trình đào tạo.
-Chỉ lấy: học kỳ thật, mã học phần (nếu có), tên học phần, số tín chỉ, lần học, điểm tổng kết hệ 10.
-Không lấy: điểm chữ, GPA hệ 4, điểm chuyên cần, bài tập, giữa kỳ, cuối kỳ, điểm thành phần.
+Dữ liệu đầu vào có thể là:
+- Text copy từ trang bảng điểm
+- Ảnh chụp bảng điểm
+- PDF bảng điểm
 
-QUAN TRỌNG — XỬ LÝ NHIỀU LẦN HỌC (HỌC LẠI/CẢI THIỆN):
-- Một môn có thể xuất hiện nhiều lần trong bảng điểm (học lại, cải thiện).
-- Mỗi lần học là một mục riêng trong đúng học kỳ nó được đăng ký.
-- attemptNumber = lần học thứ mấy (1, 2, 3...). Dựa vào cột "Lần" hoặc "Số lần" trong bảng điểm.
-  Nếu không có cột lần học, dựa vào thời gian: lần đầu tiên = 1, lần sau tăng dần.
-- KHÔNG gộp các lần học của cùng một môn thành một mục duy nhất.
-- Sắp xếp các học kỳ theo thứ tự thời gian tăng dần (cũ trước, mới sau).
+Yêu cầu:
+- Đây là bảng điểm, không phải kế hoạch học tập.
+- Giữ đúng học kỳ thật. Không gộp các học kỳ.
+- KHÔNG bỏ môn chưa có điểm.
+- Nếu chưa có điểm hệ 10, để score10: null.
+- Nếu không có mã học phần, để code: "".
+- Nếu có số tín chỉ, giữ đúng.
+- Nếu có lần học, giữ đúng attemptNumber (1, 2, 3...).
+- Một môn có thể xuất hiện nhiều lần (học lại, cải thiện) — mỗi lần là một mục riêng.
+- Không tự suy đoán điểm. Không tự làm tròn điểm.
+- Chỉ trả về JSON hợp lệ. Không dùng markdown. Không giải thích thêm.
 
-Quy tắc chung:
-- Mã học phần: để trống nếu không có
-- Chưa có điểm: score10 = null (không bỏ môn)
-- Học kỳ hè: termCode = "summer"
-- Học kỳ riêng: termCode = "custom"
-- Mỗi học kỳ một term riêng, không gộp
-
-Format JSON:
+Format bắt buộc:
 {
   "terms": [
     {
-      "academicYear": "2023-2024",
-      "termCode": "semester_1",
+      "academicYear": "YYYY-YYYY",
+      "termCode": "semester_1 | semester_2 | summer | custom",
       "courses": [
-        { "code": "NS1011", "name": "Giải tích 1", "credits": 2, "attemptNumber": 1, "score10": 5.4 }
-      ]
-    },
-    {
-      "academicYear": "2024-2025",
-      "termCode": "semester_1",
-      "courses": [
-        { "code": "NS1011", "name": "Giải tích 1", "credits": 2, "attemptNumber": 2, "score10": 8.5 }
+        {
+          "code": "",
+          "name": "",
+          "credits": 0,
+          "attemptNumber": 1,
+          "score10": null
+        }
       ]
     }
   ]
 }
 
-Lưu ý: GradeFlow tự quy đổi điểm chữ và GPA từ điểm hệ 10. KHÔNG thêm letterGrade, gpa4 hay điểm thành phần.`;
+Quy ước termCode:
+- Học kỳ 1: semester_1
+- Học kỳ 2: semester_2
+- Học kỳ hè: summer
+- Học kỳ khác/riêng: custom`;
 
 function getValue(record: Record<string, unknown>, keys: string[]): unknown {
   const matchedKey = keys.find((key) => record[key] !== undefined);

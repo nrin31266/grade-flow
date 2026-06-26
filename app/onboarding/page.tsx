@@ -211,7 +211,7 @@ export default function OnboardingPage() {
     };
 
     saveUserProfile(profile);
-    router.push("/program");
+    router.push("/dashboard");
   }
 
   return (

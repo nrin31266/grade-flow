@@ -35,12 +35,13 @@ import {
   type ImportDuplicateStrategy,
   type ProgramCourseImportSummary,
 } from "@/lib/program-course-import-merge";
-import type { StudyProgramCourse } from "@/types/academic";
+import type { CourseEnrollment, StudyProgramCourse } from "@/types/academic";
 
 type ProgramCourseImportDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   existingCourses: StudyProgramCourse[];
+  existingEnrollments?: CourseEnrollment[];
   onImportCourses: (
     courses: StudyProgramCourse[],
     summary: ProgramCourseImportSummary,
@@ -78,6 +79,7 @@ export function ProgramCourseImportDialog({
   open,
   onOpenChange,
   existingCourses = [],
+  existingEnrollments = [],
   onImportCourses,
 }: ProgramCourseImportDialogProps) {
   const [jsonInput, setJsonInput] = useState("");
@@ -149,13 +151,30 @@ export function ProgramCourseImportDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
         <DialogHeader>
-          <DialogTitle>Import chương trình học</DialogTitle>
+          <DialogTitle>Import kế hoạch học tập</DialogTitle>
           <DialogDescription>
-            Dán JSON danh sách học phần theo chương trình đào tạo.
+            Dán JSON danh sách học phần trong chương trình đào tạo. Dữ liệu này
+            dùng để đối chiếu với bảng điểm, không dùng trực tiếp để tính GPA.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-5">
+          {/* Giải thích */}
+          <div className="rounded-lg border border-sky-100 bg-sky-50/40 px-4 py-3 text-sm dark:border-sky-900/40 dark:bg-sky-950/10">
+            <p className="font-medium text-sky-800 dark:text-sky-200">
+              Kế hoạch học tập khác gì bảng điểm?
+            </p>
+            <p className="mt-1 text-xs text-sky-700 dark:text-sky-300">
+              Kế hoạch học tập là danh sách môn trong chương trình đào tạo. Bảng
+              điểm là các môn bạn đã học hoặc đang học và có điểm. Khi có cả
+              hai, GradeFlow sẽ tự đối chiếu để biết môn nào đã học, môn nào
+              còn thiếu.
+            </p>
+            <p className="mt-1 text-xs text-sky-600 dark:text-sky-400">
+              Bạn không bắt buộc phải import kế hoạch học tập ngay từ đầu. Nếu
+              chỉ muốn tính GPA, hãy import bảng điểm trước.
+            </p>
+          </div>
           {/* Ô nhập JSON */}
           <div className="grid gap-2">
             <Label htmlFor="programCourseImportJson">Dữ liệu JSON</Label>
@@ -204,28 +223,32 @@ export function ProgramCourseImportDialog({
             <summary className="cursor-pointer text-xs font-medium text-sky-700 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200">
               🤖 Hướng dẫn tạo JSON bằng AI (DeepSeek / ChatGPT / Gemini)
             </summary>
-            <ol className="mt-3 space-y-1.5 text-xs text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">1</span>
-                <span>Bấm nút <strong className="text-foreground">🤖 Copy prompt cho AI</strong> bên dưới để copy hướng dẫn.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">2</span>
-                <span>Mở DeepSeek / ChatGPT / Gemini và <strong className="text-foreground">dán prompt</strong> vào.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">3</span>
-                <span>Copy nội dung <strong className="text-foreground">chương trình đào tạo</strong> từ cổng thông tin / ảnh chụp / PDF và gửi cho AI.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">4</span>
-                <span>AI trả về JSON — bấm <strong className="text-foreground">Copy</strong>, quay lại đây và <strong className="text-foreground">dán vào ô JSON</strong>.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">5</span>
-                <span>Bấm <strong className="text-foreground">Kiểm tra</strong> để xác nhận dữ liệu hợp lệ, rồi <strong className="text-foreground">Import</strong>.</span>
-              </li>
-            </ol>
+            <div className="mt-3 space-y-2 text-xs text-muted-foreground">
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">1</span>
+                <span>Mở trang <strong className="text-foreground">chương trình đào tạo</strong> trên cổng thông tin của trường.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">2</span>
+                <span>Lấy dữ liệu: <strong className="text-foreground">Copy text</strong> (Ctrl+C) nếu được, hoặc chụp ảnh, hoặc <strong className="text-foreground">Ctrl+P</strong> → Lưu PDF.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">3</span>
+                <span>Bấm nút <strong className="text-foreground">🤖 Copy prompt cho AI</strong> bên dưới.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">4</span>
+                <span>Mở AI, <strong className="text-foreground">dán prompt</strong>, gửi kèm dữ liệu (text/ảnh/PDF).</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">5</span>
+                <span>AI trả về JSON — <strong className="text-foreground">copy</strong>, dán vào ô JSON bên trên.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">6</span>
+                <span>Bấm <strong className="text-foreground">Kiểm tra</strong> → <strong className="text-foreground">Import</strong>.</span>
+              </div>
+            </div>
           </details>
 
           {/* Thanh công cụ */}
@@ -253,7 +276,23 @@ export function ProgramCourseImportDialog({
             <div className="grid gap-3">
               {validCourses.length > 0 && (
                 <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">
-                  ✅ {validCourses.length} học phần hợp lệ: {duplicateSplit.newCourses.length} mới · {duplicateSplit.duplicateCourses.length} trùng
+                  <p>✅ {validCourses.length} học phần hợp lệ: {duplicateSplit.newCourses.length} mới · {duplicateSplit.duplicateCourses.length} trùng</p>
+                  {existingEnrollments.length > 0 && (
+                    <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
+                      Đối chiếu với bảng điểm hiện có:{' '}
+                      {validCourses.filter(c =>
+                        existingEnrollments.some(e =>
+                          e.programCourseId === c.id ||
+                          (!e.programCourseId && e.name === c.name && e.credits === c.credits)
+                        )
+                      ).length} học phần đã có trong bảng điểm
+                    </p>
+                  )}
+                  {existingEnrollments.length === 0 && (
+                    <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
+                      Bạn chưa import bảng điểm. Sau khi import bảng điểm, GradeFlow sẽ tự đối chiếu với kế hoạch này.
+                    </p>
+                  )}
                 </div>
               )}
               {errors.length > 0 && (
