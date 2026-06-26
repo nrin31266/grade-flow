@@ -48,7 +48,7 @@ export function CreditProgressChart({ data }: CreditProgressChartProps) {
         Tín chỉ đạt từng kỳ và lũy kế theo thời gian.
       </p>
 
-      <div className="mt-3 h-[260px]">
+      <div className="mt-3 h-[260px] min-w-0">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={validData}

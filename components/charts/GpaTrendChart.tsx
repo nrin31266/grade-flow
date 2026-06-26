@@ -47,7 +47,7 @@ export function GpaTrendChart({ data }: GpaTrendChartProps) {
         So sánh GPA từng kỳ và GPA tích lũy hệ 4.
       </p>
 
-      <div className="mt-3 h-[280px]">
+      <div className="mt-3 h-[280px] min-w-0">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={validData}
