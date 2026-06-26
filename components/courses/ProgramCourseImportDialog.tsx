@@ -230,7 +230,9 @@ export function ProgramCourseImportDialog({
               </div>
               <div className="flex items-start gap-2">
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">2</span>
-                <span>Lấy dữ liệu: <strong className="text-foreground">Copy text</strong> (Ctrl+C) nếu được, hoặc chụp ảnh, hoặc <strong className="text-foreground">Ctrl+P</strong> → Lưu PDF.</span>
+                <span>Lấy dữ liệu:<br/>
+                  • <strong className="text-foreground">Máy tính:</strong> Copy text (Ctrl+C) hoặc Ctrl+P → Lưu PDF<br/>
+                  • <strong className="text-foreground">Điện thoại:</strong> Chụp ảnh màn hình</span>
               </div>
               <div className="flex items-start gap-2">
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">3</span>
@@ -259,7 +261,7 @@ export function ProgramCourseImportDialog({
             <Button size="sm" variant="secondary" onClick={() => copyText(sampleProgramCoursesJson, "Đã copy JSON mẫu.")}>
               Copy JSON mẫu
             </Button>
-            <Button size="sm" variant="default" className="bg-sky-600 hover:bg-sky-700" onClick={() => copyText(aiProgramCoursePrompt, "Đã copy prompt cho AI.")}>
+            <Button size="sm" variant="default" className="animate-shimmer bg-gradient-to-r from-sky-600 via-sky-400 to-sky-600 bg-[length:200%_100%] text-white hover:from-sky-700 hover:via-sky-500 hover:to-sky-700" onClick={() => copyText(aiProgramCoursePrompt, "Đã copy prompt cho AI.")}>
               🤖 Copy prompt cho AI
             </Button>
             <Button size="sm" onClick={handleValidate}>
