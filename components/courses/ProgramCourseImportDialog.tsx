@@ -200,7 +200,7 @@ export function ProgramCourseImportDialog({
           </div>
 
           {/* Hướng dẫn tạo JSON bằng AI */}
-          <details className="group rounded-lg border border-dashed border-sky-200 bg-sky-50/30 px-4 py-2 dark:border-sky-800 dark:bg-sky-950/10">
+          <details open className="group rounded-lg border border-dashed border-sky-200 bg-sky-50/30 px-4 py-2 dark:border-sky-800 dark:bg-sky-950/10">
             <summary className="cursor-pointer text-xs font-medium text-sky-700 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200">
               🤖 Hướng dẫn tạo JSON bằng AI (DeepSeek / ChatGPT / Gemini)
             </summary>
