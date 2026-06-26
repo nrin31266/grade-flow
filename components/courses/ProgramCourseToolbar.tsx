@@ -24,7 +24,6 @@ type ProgramCourseToolbarProps = {
   filteredCount: number;
   totalCredits: number;
   filteredCredits: number;
-  graduationCredits?: number;
   onResetFilters: () => void;
 };
 
@@ -58,7 +57,6 @@ export function ProgramCourseToolbar({
   filteredCount,
   totalCredits,
   filteredCredits,
-  graduationCredits,
   onResetFilters,
 }: ProgramCourseToolbarProps) {
   const hasActiveFilters =
@@ -95,7 +93,7 @@ export function ProgramCourseToolbar({
   }
 
   return (
-    <div className="grid gap-4 rounded-xl border bg-background p-4 shadow-sm">
+    <div className="grid gap-3 rounded-lg border bg-background px-4 py-3 shadow-sm">
       <div className="grid gap-3 lg:grid-cols-[minmax(260px,1.5fr)_repeat(3,minmax(180px,1fr))_auto] lg:items-end">
         <div className="grid gap-2">
           <Label htmlFor="programCourseSearch">Tìm kiếm</Label>
@@ -192,9 +190,6 @@ export function ProgramCourseToolbar({
         {filteredCredits} tín chỉ trong khung
         {filteredCredits !== totalCredits
           ? ` / ${totalCredits} tín chỉ toàn bộ khung`
-          : ""}
-        {graduationCredits
-          ? ` · Mục tiêu tốt nghiệp: ${graduationCredits} tín chỉ`
           : ""}
       </p>
     </div>

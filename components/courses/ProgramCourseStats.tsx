@@ -3,11 +3,15 @@ import type { ProgramCourseStatsValue } from "@/lib/program-course-view";
 type ProgramCourseStatsProps = {
   stats: ProgramCourseStatsValue;
   graduationCredits?: number;
+  requiredGraduationCredits?: number;
+  electiveGraduationCredits?: number;
 };
 
 export function ProgramCourseStats({
   stats,
   graduationCredits,
+  requiredGraduationCredits,
+  electiveGraduationCredits,
 }: ProgramCourseStatsProps) {
   const statItems = [
     {
@@ -26,12 +30,16 @@ export function ProgramCourseStats({
     {
       label: "Bắt buộc",
       value: stats.requiredCredits,
-      sub: "tín chỉ bắt buộc trong khung",
+      sub: requiredGraduationCredits
+        ? `mục tiêu: ${requiredGraduationCredits} tín chỉ`
+        : "tín chỉ bắt buộc trong khung",
     },
     {
       label: "Tự chọn",
       value: stats.electiveCredits,
-      sub: "tín chỉ tự chọn trong khung",
+      sub: electiveGraduationCredits
+        ? `mục tiêu: ${electiveGraduationCredits} tín chỉ`
+        : "tín chỉ tự chọn trong khung",
     },
     {
       label: "Chưa gán kỳ",
@@ -49,7 +57,7 @@ export function ProgramCourseStats({
       {statItems.map((item) => (
         <div
           key={item.label}
-          className={`rounded-xl border bg-background p-4 shadow-sm ${
+          className={`rounded-lg border bg-background px-4 py-3 shadow-sm ${
             item.warning
               ? "border-yellow-300 bg-yellow-50 text-yellow-950 dark:border-yellow-900 dark:bg-yellow-950/30 dark:text-yellow-100"
               : ""
@@ -58,7 +66,7 @@ export function ProgramCourseStats({
           <p className="text-sm font-medium text-muted-foreground">
             {item.label}
           </p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
+          <p className="mt-1 text-xl font-semibold tracking-tight">
             {item.value}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">{item.sub}</p>

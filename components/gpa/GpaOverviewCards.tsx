@@ -4,22 +4,24 @@ import { formatCredits, formatGpa } from "@/lib/number-format";
 type GpaOverviewCardsProps = {
   summary: OverallGpaSummary;
   graduationCredits?: number;
+  showRetakeCard?: boolean;
 };
 
 export function GpaOverviewCards({
   summary,
   graduationCredits,
+  showRetakeCard = true,
 }: GpaOverviewCardsProps) {
   const cards = [
     {
       label: "GPA hệ 4",
       value: formatGpa(summary.cumulativeGpa4),
-      sub: "Tính từ bảng điểm thật đã nhập",
+      sub: "GPA tích lũy từ các lượt học hiệu lực",
     },
     {
       label: "GPA hệ 10",
       value: formatGpa(summary.cumulativeGpa10),
-      sub: "Tính từ bảng điểm thật đã nhập",
+      sub: "GPA tích lũy từ các lượt học hiệu lực",
     },
     {
       label: "Tín chỉ đã đạt",
@@ -28,7 +30,7 @@ export function GpaOverviewCards({
             graduationCredits,
           )}`
         : formatCredits(summary.earnedGraduationCredits),
-      sub: "Từ các lượt học thật đạt điểm",
+      sub: "Không cộng trùng môn học lại/cải thiện",
     },
     {
       label: "Còn thiếu",
@@ -53,14 +55,14 @@ export function GpaOverviewCards({
         summary.repeatedRawCredits,
       )} tín chỉ lượt học`,
     },
-  ];
+  ].filter((card) => showRetakeCard || card.label !== "Học lại/cải thiện");
 
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
       {cards.map((card) => (
         <div
           key={card.label}
-          className={`rounded-xl border bg-background p-4 shadow-sm ${
+          className={`rounded-lg border bg-background px-4 py-3 shadow-sm ${
             card.warning
               ? "border-yellow-300 bg-yellow-50 text-yellow-950 dark:border-yellow-900 dark:bg-yellow-950/30 dark:text-yellow-100"
               : ""
@@ -69,7 +71,7 @@ export function GpaOverviewCards({
           <p className="text-sm font-medium text-muted-foreground">
             {card.label}
           </p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
+          <p className="mt-1 text-xl font-semibold tracking-tight">
             {card.value}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">{card.sub}</p>

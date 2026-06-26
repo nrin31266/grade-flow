@@ -6,6 +6,9 @@ import type { GradeScaleItem } from "@/types/school";
 export type AcademicRules = {
   gradeScale: GradeScaleItem[];
   retakeSettings: ReturnType<typeof getEffectiveRetakeSettings>;
+  graduationCredits?: number;
+  requiredGraduationCredits?: number;
+  electiveGraduationCredits?: number;
 };
 
 export function getDefaultAcademicRulesForSchool(schoolId: string): AcademicRules {
@@ -16,6 +19,11 @@ export function getDefaultAcademicRulesForSchool(schoolId: string): AcademicRule
     retakeSettings: getEffectiveRetakeSettings({
       retakeSettings: school?.academicRulePreset?.retakeSettings,
     } as UserProfile),
+    graduationCredits: school?.academicRulePreset?.graduationCredits,
+    requiredGraduationCredits:
+      school?.academicRulePreset?.requiredGraduationCredits,
+    electiveGraduationCredits:
+      school?.academicRulePreset?.electiveGraduationCredits,
   };
 }
 
@@ -26,6 +34,11 @@ export function mergeProfileWithAcademicDefaults(
 
   return {
     ...profile,
+    graduationCredits: profile.graduationCredits ?? rules.graduationCredits,
+    requiredGraduationCredits:
+      profile.requiredGraduationCredits ?? rules.requiredGraduationCredits,
+    electiveGraduationCredits:
+      profile.electiveGraduationCredits ?? rules.electiveGraduationCredits,
     gradeScale: profile.gradeScale.length > 0 ? profile.gradeScale : rules.gradeScale,
     retakeSettings: getEffectiveRetakeSettings(profile),
   };

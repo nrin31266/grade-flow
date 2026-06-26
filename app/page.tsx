@@ -1,26 +1,26 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useState } from "react";
 
 import { LandingHero } from "@/components/landing/LandingHero";
 import { AppShell } from "@/components/layout/AppShell";
 import { getUserProfile } from "@/lib/profile-storage";
 
+function getStoredProfile(): boolean {
+  try {
+    if (typeof window === "undefined") return false;
+    return getUserProfile() !== null;
+  } catch {
+    return false;
+  }
+}
+
 export default function HomePage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const profile = getUserProfile();
-
-    if (profile) {
-      router.replace("/dashboard");
-    }
-  }, [router]);
+  const [hasProfile] = useState(getStoredProfile);
 
   return (
     <AppShell>
-      <LandingHero />
+      <LandingHero hasProfile={hasProfile} />
     </AppShell>
   );
 }

@@ -1,24 +1,35 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
 type DashboardShellProps = {
   children: React.ReactNode;
+  title: string;
+  description?: string;
+  actions?: React.ReactNode;
 };
 
 const navigationItems = [
-  { label: "Bảng điều khiển", href: "#overview", active: true },
-  { label: "Bảng điểm thật", href: "#transcript", active: false },
-  { label: "Chương trình học", href: "#program", active: false },
-  { label: "Import dữ liệu", href: "#program", active: false },
-  { label: "Cấu hình", href: "#settings", active: false },
+  { label: "Bảng điều khiển", href: "/dashboard" },
+  { label: "Bảng điểm thật", href: "/transcript" },
+  { label: "Chương trình học", href: "/program" },
 ];
 
-export function DashboardShell({ children }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  title,
+  description,
+  actions,
+}: DashboardShellProps) {
+  const pathname = usePathname();
+
   return (
     <div className="min-h-screen bg-muted/30 text-foreground">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r bg-background md:flex md:flex-col">
-        <div className="flex h-20 flex-col justify-center border-b px-5">
+      <aside className="fixed inset-y-0 left-0 hidden w-60 border-r bg-background md:flex md:flex-col">
+        <div className="flex h-16 flex-col justify-center border-b px-4">
           <Link href="/" className="text-lg font-semibold tracking-tight">
             GradeFlow
           </Link>
@@ -26,51 +37,55 @@ export function DashboardShell({ children }: DashboardShellProps) {
             Academic Workspace
           </p>
         </div>
-        <nav className="flex-1 space-y-1 p-3">
+        <nav className="flex-1 space-y-1 p-2">
           {navigationItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               className={cn(
-                "flex h-9 items-center rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                item.active && "bg-muted text-foreground",
+                "flex h-8 items-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                pathname === item.href && "bg-muted text-foreground",
               )}
             >
               {item.label}
             </Link>
           ))}
         </nav>
-        <div className="border-t p-4 text-xs text-muted-foreground">
+        <div className="border-t p-3 text-xs text-muted-foreground">
           <p className="font-medium text-foreground">Dữ liệu lưu trên trình duyệt</p>
           <p className="mt-1 leading-5">
-            GradeFlow chưa gửi hồ sơ, chương trình học hoặc bảng điểm lên máy
-            chủ.
+            Local-first workspace
           </p>
         </div>
       </aside>
 
-      <div className="min-h-screen md:pl-64">
+      <div className="min-h-screen md:pl-60">
         <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-sm">
-          <div className="flex min-h-16 w-full items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-            <div>
+          <div className="flex min-h-14 w-full flex-col gap-2 px-3 py-2.5 sm:px-5 lg:px-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
               <Link
                 href="/"
                 className="text-base font-semibold tracking-tight md:hidden"
               >
                 GradeFlow
               </Link>
-              <p className="hidden text-sm font-medium text-foreground md:block">
-                Bảng điều khiển
+              <p className="text-sm font-medium text-foreground md:text-base">
+                {title}
               </p>
-              <p className="text-xs text-muted-foreground sm:text-sm">
-                Không gian quản lý chương trình học
-              </p>
+              {description ? (
+                <p className="text-xs text-muted-foreground sm:text-sm">
+                  {description}
+                </p>
+              ) : null}
             </div>
+            {actions ? (
+              <div className="flex flex-wrap gap-2 lg:justify-end">{actions}</div>
+            ) : null}
           </div>
         </header>
 
-        <main className="w-full px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto grid w-full max-w-[1600px] gap-6">
+        <main className="w-full px-3 py-4 sm:px-5 lg:px-6">
+          <div className="mx-auto grid w-full max-w-[1600px] gap-4">
             {children}
           </div>
         </main>

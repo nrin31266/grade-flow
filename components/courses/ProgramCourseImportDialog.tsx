@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { sampleProgramCoursesShort } from "@/lib/import-samples";
 import { splitProgramCoursesByDuplicate } from "@/lib/program-course-dedupe";
 import {
   aiProgramCoursePrompt,
@@ -114,7 +114,6 @@ export function ProgramCourseImportDialog({
     if (!nextOpen) {
       resetDialog();
     }
-
     onOpenChange(nextOpen);
   }
 
@@ -134,19 +133,13 @@ export function ProgramCourseImportDialog({
 
   function handleImport() {
     const nextResult = importResult ?? parseProgramCoursesJson(jsonInput);
-
     setImportResult(nextResult);
-
-    if (nextResult.courses.length === 0) {
-      return;
-    }
-
+    if (nextResult.courses.length === 0) return;
     const { updatedCourses, summary } = mergeProgramCourseImport(
       existingCourses,
       nextResult.courses,
       duplicateStrategy,
     );
-
     onImportCourses(updatedCourses, summary);
     resetDialog();
     onOpenChange(false);
@@ -158,178 +151,169 @@ export function ProgramCourseImportDialog({
         <DialogHeader>
           <DialogTitle>Import chương trình học</DialogTitle>
           <DialogDescription>
-            Dán JSON danh sách học phần theo chương trình đào tạo. Kỳ học thật
-            và điểm sẽ được cập nhật sau.
+            Dán JSON danh sách học phần theo chương trình đào tạo.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-5">
+          {/* Ô nhập JSON */}
           <div className="grid gap-2">
             <Label htmlFor="programCourseImportJson">Dữ liệu JSON</Label>
             <Textarea
               id="programCourseImportJson"
               value={jsonInput}
-              onChange={(event) => {
-                setJsonInput(event.target.value);
+              onChange={(e) => {
+                setJsonInput(e.target.value);
                 setImportResult(null);
                 setCopyStatus(null);
               }}
-              placeholder={sampleProgramCoursesJson}
-              className="min-h-72 font-mono text-sm"
+              placeholder={sampleProgramCoursesShort}
+              className="min-h-56 font-mono text-sm"
             />
           </div>
 
-          <div className="grid gap-2 rounded-xl border bg-muted/30 p-4">
-            <Label htmlFor="programCourseDuplicateStrategy">
+          {/* Xử lý trùng */}
+          <div className="rounded-xl border border-sky-100 bg-sky-50/40 p-4 dark:border-sky-900/40 dark:bg-sky-950/10">
+            <Label htmlFor="programCourseDuplicateStrategy" className="text-sm font-medium">
               Cách xử lý dữ liệu trùng
             </Label>
             <Select
               value={duplicateStrategy}
-              onValueChange={(value) =>
-                setDuplicateStrategy(value as ImportDuplicateStrategy)
-              }
+              onValueChange={(v) => setDuplicateStrategy(v as ImportDuplicateStrategy)}
             >
-              <SelectTrigger
-                id="programCourseDuplicateStrategy"
-                className="w-full"
-              >
+              <SelectTrigger id="programCourseDuplicateStrategy" className="mt-1.5 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {duplicateStrategyOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                {duplicateStrategyOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {selectedStrategy ? (
-              <p className="text-sm text-muted-foreground">
+            {selectedStrategy && (
+              <p className="mt-1.5 text-xs text-muted-foreground">
                 {selectedStrategy.description}
               </p>
-            ) : null}
+            )}
           </div>
 
+          {/* Hướng dẫn tạo JSON bằng AI */}
+          <details className="group rounded-lg border border-dashed border-sky-200 bg-sky-50/30 px-4 py-2 dark:border-sky-800 dark:bg-sky-950/10">
+            <summary className="cursor-pointer text-xs font-medium text-sky-700 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200">
+              🤖 Hướng dẫn tạo JSON bằng AI (DeepSeek / ChatGPT / Gemini)
+            </summary>
+            <ol className="mt-3 space-y-1.5 text-xs text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">1</span>
+                <span>Bấm nút <strong className="text-foreground">🤖 Copy prompt cho AI</strong> bên dưới để copy hướng dẫn.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">2</span>
+                <span>Mở DeepSeek / ChatGPT / Gemini và <strong className="text-foreground">dán prompt</strong> vào.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">3</span>
+                <span>Copy nội dung <strong className="text-foreground">chương trình đào tạo</strong> từ cổng thông tin / ảnh chụp / PDF và gửi cho AI.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">4</span>
+                <span>AI trả về JSON — bấm <strong className="text-foreground">Copy</strong>, quay lại đây và <strong className="text-foreground">dán vào ô JSON</strong>.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-200 text-[10px] font-bold text-sky-800 dark:bg-sky-800 dark:text-sky-200">5</span>
+                <span>Bấm <strong className="text-foreground">Kiểm tra</strong> để xác nhận dữ liệu hợp lệ, rồi <strong className="text-foreground">Import</strong>.</span>
+              </li>
+            </ol>
+          </details>
+
+          {/* Thanh công cụ */}
           <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setJsonInput(sampleProgramCoursesJson);
-                setImportResult(null);
-                setCopyStatus(null);
-              }}
-            >
-              Dán JSON mẫu
+            <Button size="sm" variant="outline" onClick={() => { setJsonInput(sampleProgramCoursesJson); setImportResult(null); setCopyStatus(null); }}>
+              📋 Dán JSON mẫu
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                copyText(sampleProgramCoursesJson, "Đã copy JSON mẫu.")
-              }
-            >
+            <Button size="sm" variant="secondary" onClick={() => copyText(sampleProgramCoursesJson, "Đã copy JSON mẫu.")}>
               Copy JSON mẫu
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                copyText(aiProgramCoursePrompt, "Đã copy prompt cho AI.")
-              }
-            >
-              Copy prompt cho AI
+            <Button size="sm" variant="default" className="bg-sky-600 hover:bg-sky-700" onClick={() => copyText(aiProgramCoursePrompt, "Đã copy prompt cho AI.")}>
+              🤖 Copy prompt cho AI
             </Button>
-            <Button type="button" onClick={handleValidate}>
-              Kiểm tra dữ liệu
+            <Button size="sm" onClick={handleValidate}>
+              ✅ Kiểm tra
             </Button>
           </div>
 
-          {copyStatus ? (
-            <p className="text-sm text-muted-foreground">{copyStatus}</p>
-          ) : null}
+          {copyStatus && (
+            <p className="text-xs text-muted-foreground">{copyStatus}</p>
+          )}
 
-          {importResult ? (
+          {/* Kết quả kiểm tra */}
+          {importResult && (
             <div className="grid gap-3">
-              {validCourses.length > 0 ? (
-                <div className="grid gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950/40 dark:text-green-300">
-                  <p>
-                    Tìm thấy {validCourses.length} học phần hợp lệ:{" "}
-                    {duplicateSplit.newCourses.length} học phần mới,{" "}
-                    {duplicateSplit.duplicateCourses.length} học phần trùng.
-                  </p>
-                  {duplicateStrategy === "skip" &&
-                  duplicateSplit.duplicateCourses.length > 0 ? (
-                    <p>
-                      Khi import, các học phần trùng sẽ được bỏ qua theo lựa
-                      chọn hiện tại.
-                    </p>
-                  ) : null}
+              {validCourses.length > 0 && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">
+                  ✅ {validCourses.length} học phần hợp lệ: {duplicateSplit.newCourses.length} mới · {duplicateSplit.duplicateCourses.length} trùng
                 </div>
-              ) : null}
-
-              {errors.length > 0 ? (
-                <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-                  <p className="font-medium">Cần kiểm tra lại:</p>
-                  <ul className="mt-2 list-disc space-y-1 pl-5">
-                    {errors.map((error) => (
-                      <li key={error}>{error}</li>
-                    ))}
+              )}
+              {errors.length > 0 && (
+                <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300">
+                  <p className="font-medium">❌ Cần sửa:</p>
+                  <ul className="mt-1 list-disc pl-4 text-xs">
+                    {errors.map((e) => <li key={e}>{e}</li>)}
                   </ul>
                 </div>
-              ) : null}
-
-              {warnings.length > 0 ? (
-                <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/40 dark:text-yellow-300">
-                  <p className="font-medium">Cảnh báo:</p>
-                  <ul className="mt-2 list-disc space-y-1 pl-5">
-                    {warnings.map((warning) => (
-                      <li key={warning}>{warning}</li>
-                    ))}
+              )}
+              {warnings.length > 0 && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+                  <p className="font-medium">⚠️ Cảnh báo:</p>
+                  <ul className="mt-1 list-disc pl-4 text-xs">
+                    {warnings.map((w) => <li key={w}>{w}</li>)}
                   </ul>
                 </div>
-              ) : null}
+              )}
             </div>
-          ) : null}
+          )}
 
+          {/* Preview */}
           {previewCourses.length > 0 ? (
-            <div className="grid gap-2">
-              <h3 className="text-sm font-medium">Preview trước khi import</h3>
-              <div className="overflow-x-auto rounded-xl border bg-background">
-                <table className="w-full min-w-[760px] text-sm">
-                  <thead className="bg-muted text-left text-muted-foreground">
+            <div>
+              <h3 className="mb-2 text-sm font-medium">Xem trước</h3>
+              <div className="overflow-x-auto rounded-lg border">
+                <table className="w-full min-w-[700px] text-sm">
+                  <thead className="bg-sky-50 text-left text-muted-foreground dark:bg-sky-950/20">
                     <tr>
-                      <th className="px-4 py-3 font-medium">Trạng thái</th>
-                      <th className="px-4 py-3 font-medium">Kỳ</th>
-                      <th className="px-4 py-3 font-medium">Mã</th>
-                      <th className="px-4 py-3 font-medium">Tên học phần</th>
-                      <th className="px-4 py-3 font-medium">Tín chỉ</th>
-                      <th className="px-4 py-3 font-medium">Khối kiến thức</th>
-                      <th className="px-4 py-3 font-medium">Loại</th>
+                      <th className="px-3 py-2 font-medium">Trạng thái</th>
+                      <th className="px-3 py-2 font-medium">Kỳ</th>
+                      <th className="px-3 py-2 font-medium">Mã</th>
+                      <th className="px-3 py-2 font-medium">Tên</th>
+                      <th className="px-3 py-2 font-medium">TC</th>
+                      <th className="px-3 py-2 font-medium">Khối</th>
+                      <th className="px-3 py-2 font-medium">Loại</th>
                     </tr>
                   </thead>
                   <tbody>
                     {previewCourses.map((course) => (
                       <tr key={course.id} className="border-t">
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2">
                           {duplicateCourseIds.has(course.id) ? (
-                            <Badge variant="outline">Trùng</Badge>
+                            <span className="text-xs font-semibold text-amber-600">Trùng</span>
                           ) : (
-                            <Badge>Mới</Badge>
+                            <span className="text-xs font-semibold text-emerald-600">Mới</span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2">
                           {course.plannedTermNumber
                             ? `Kỳ ${course.plannedTermNumber}`
-                            : "Chưa gán"}
+                            : "—"}
                         </td>
-                        <td className="px-4 py-3">{course.code || "—"}</td>
-                        <td className="px-4 py-3 font-medium">{course.name}</td>
-                        <td className="px-4 py-3">{course.credits}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2">{course.code || "—"}</td>
+                        <td className="px-3 py-2 font-medium">{course.name}</td>
+                        <td className="px-3 py-2">{course.credits}</td>
+                        <td className="px-3 py-2">
                           {knowledgeBlockLabels[course.knowledgeBlock]}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2">
                           {requirementTypeLabels[course.requirementType]}
                         </td>
                       </tr>
@@ -337,11 +321,11 @@ export function ProgramCourseImportDialog({
                   </tbody>
                 </table>
               </div>
-              {hiddenPreviewCount > 0 ? (
-                <p className="text-sm text-muted-foreground">
+              {hiddenPreviewCount > 0 && (
+                <p className="mt-1 text-xs text-muted-foreground">
                   Và {hiddenPreviewCount} học phần khác...
                 </p>
-              ) : null}
+              )}
             </div>
           ) : null}
         </div>

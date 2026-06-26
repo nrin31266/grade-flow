@@ -23,6 +23,7 @@ import {
 import { getDefaultAcademicRulesForSchool } from "@/lib/school-academic-rules";
 import { getEffectiveRetakeSettings } from "@/lib/retake-settings";
 import type {
+  CreditWarningMode,
   RetakePolicy,
   RetakeSettings,
   RetakeTriggerMode,
@@ -40,9 +41,11 @@ type AcademicRulesDialogProps = {
 type FormErrors = {
   displayName?: string;
   graduationCredits?: string;
+  requiredGraduationCredits?: string;
+  electiveGraduationCredits?: string;
   retakeScoreThreshold?: string;
-  improvementCreditLimitPercent?: string;
-  retakeCreditLimitPercent?: string;
+  improvementCreditWarningPercent?: string;
+  retakeCreditWarningPercent?: string;
 };
 
 function optionalNumberToString(value?: number): string {
@@ -70,6 +73,12 @@ export function AcademicRulesDialog({
   const [graduationCredits, setGraduationCredits] = useState(
     optionalNumberToString(profile.graduationCredits),
   );
+  const [requiredGraduationCredits, setRequiredGraduationCredits] = useState(
+    optionalNumberToString(profile.requiredGraduationCredits),
+  );
+  const [electiveGraduationCredits, setElectiveGraduationCredits] = useState(
+    optionalNumberToString(profile.electiveGraduationCredits),
+  );
   const [retakeSettings, setRetakeSettings] = useState<RetakeSettings>(
     getEffectiveRetakeSettings(profile),
   );
@@ -84,10 +93,26 @@ export function AcademicRulesDialog({
 
   function handleRestorePreset() {
     const rules = getDefaultAcademicRulesForSchool(profile.schoolId);
+    const nextGraduationCredits =
+      rules.graduationCredits ?? profile.graduationCredits;
+    const nextRequiredGraduationCredits =
+      rules.requiredGraduationCredits ?? profile.requiredGraduationCredits;
+    const nextElectiveGraduationCredits =
+      rules.electiveGraduationCredits ?? profile.electiveGraduationCredits;
 
     setRetakeSettings(rules.retakeSettings);
+    setGraduationCredits(optionalNumberToString(nextGraduationCredits));
+    setRequiredGraduationCredits(
+      optionalNumberToString(nextRequiredGraduationCredits),
+    );
+    setElectiveGraduationCredits(
+      optionalNumberToString(nextElectiveGraduationCredits),
+    );
     onSaveProfile({
       ...profile,
+      graduationCredits: nextGraduationCredits,
+      requiredGraduationCredits: nextRequiredGraduationCredits,
+      electiveGraduationCredits: nextElectiveGraduationCredits,
       gradeScale: rules.gradeScale,
       retakeSettings: rules.retakeSettings,
       updatedAt: new Date().toISOString(),
@@ -99,6 +124,8 @@ export function AcademicRulesDialog({
 
     const trimmedDisplayName = displayName.trim();
     const parsedGraduationCredits = Number(graduationCredits);
+    const parsedRequiredGraduationCredits = Number(requiredGraduationCredits);
+    const parsedElectiveGraduationCredits = Number(electiveGraduationCredits);
     const nextErrors: FormErrors = {};
 
     if (!trimmedDisplayName) {
@@ -113,6 +140,37 @@ export function AcademicRulesDialog({
     }
 
     if (
+      requiredGraduationCredits.trim() !== "" &&
+      (!Number.isFinite(parsedRequiredGraduationCredits) ||
+        parsedRequiredGraduationCredits < 0)
+    ) {
+      nextErrors.requiredGraduationCredits =
+        "Tín chỉ bắt buộc không được âm.";
+    }
+
+    if (
+      electiveGraduationCredits.trim() !== "" &&
+      (!Number.isFinite(parsedElectiveGraduationCredits) ||
+        parsedElectiveGraduationCredits < 0)
+    ) {
+      nextErrors.electiveGraduationCredits = "Tín chỉ tự chọn không được âm.";
+    }
+
+    if (
+      graduationCredits.trim() !== "" &&
+      requiredGraduationCredits.trim() !== "" &&
+      electiveGraduationCredits.trim() !== "" &&
+      Number.isFinite(parsedGraduationCredits) &&
+      Number.isFinite(parsedRequiredGraduationCredits) &&
+      Number.isFinite(parsedElectiveGraduationCredits) &&
+      parsedRequiredGraduationCredits + parsedElectiveGraduationCredits !==
+        parsedGraduationCredits
+    ) {
+      nextErrors.graduationCredits =
+        "Tổng tín chỉ nên bằng tín chỉ bắt buộc + tín chỉ tự chọn.";
+    }
+
+    if (
       !Number.isFinite(retakeSettings.retakeScoreThreshold) ||
       retakeSettings.retakeScoreThreshold < 0 ||
       retakeSettings.retakeScoreThreshold > 10
@@ -120,21 +178,27 @@ export function AcademicRulesDialog({
       nextErrors.retakeScoreThreshold = "Ngưỡng điểm phải nằm trong 0 đến 10.";
     }
 
-    if (
-      retakeSettings.improvementCreditLimitPercent !== undefined &&
-      retakeSettings.improvementCreditLimitPercent < 0
-    ) {
-      nextErrors.improvementCreditLimitPercent =
-        "Ngưỡng tín chỉ cải thiện không được âm.";
-    }
+    const warningPercentFields = [
+      {
+        key: "improvementCreditWarningPercent" as const,
+        value: retakeSettings.improvementCreditWarningPercent,
+        label: "Ngưỡng tín chỉ cải thiện",
+      },
+      {
+        key: "retakeCreditWarningPercent" as const,
+        value: retakeSettings.retakeCreditWarningPercent,
+        label: "Ngưỡng tín chỉ học lại",
+      },
+    ];
 
-    if (
-      retakeSettings.retakeCreditLimitPercent !== undefined &&
-      retakeSettings.retakeCreditLimitPercent < 0
-    ) {
-      nextErrors.retakeCreditLimitPercent =
-        "Ngưỡng tín chỉ học lại không được âm.";
-    }
+    warningPercentFields.forEach((field) => {
+      if (
+        field.value !== undefined &&
+        (field.value < 0 || field.value > 100)
+      ) {
+        nextErrors[field.key] = `${field.label} phải nằm trong 0 đến 100%.`;
+      }
+    });
 
     setFormErrors(nextErrors);
 
@@ -147,6 +211,14 @@ export function AcademicRulesDialog({
       displayName: trimmedDisplayName,
       graduationCredits:
         graduationCredits.trim() === "" ? undefined : parsedGraduationCredits,
+      requiredGraduationCredits:
+        requiredGraduationCredits.trim() === ""
+          ? undefined
+          : parsedRequiredGraduationCredits,
+      electiveGraduationCredits:
+        electiveGraduationCredits.trim() === ""
+          ? undefined
+          : parsedElectiveGraduationCredits,
       retakeSettings,
       updatedAt: new Date().toISOString(),
     });
@@ -165,12 +237,12 @@ export function AcademicRulesDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid gap-5">
-          <section className="grid gap-4 rounded-xl border bg-muted/20 p-4">
+          <section className="grid gap-4 rounded-lg border bg-muted/20 p-4">
             <div>
               <h3 className="font-semibold">Hồ sơ</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Tín chỉ tốt nghiệp phụ thuộc ngành/chương trình, không chỉ phụ
-                thuộc vào trường.
+                Tín chỉ tốt nghiệp phụ thuộc ngành/chương trình. Preset VKU mặc
+                định: 154 tín chỉ bắt buộc và 6 tín chỉ tự chọn.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -212,9 +284,70 @@ export function AcademicRulesDialog({
                 ) : null}
               </div>
             </div>
+
+            <div className="grid gap-3 rounded-lg border bg-background p-3">
+              <div>
+                <h4 className="text-sm font-semibold">Cơ cấu tín chỉ</h4>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Dùng để đối chiếu tiến độ tốt nghiệp. Không tự thay đổi danh
+                  sách học phần đã import.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="academicRequiredCredits">Bắt buộc</Label>
+                  <Input
+                    id="academicRequiredCredits"
+                    type="number"
+                    min="0"
+                    value={requiredGraduationCredits}
+                    onChange={(event) =>
+                      setRequiredGraduationCredits(event.target.value)
+                    }
+                    placeholder="Ví dụ: 154"
+                  />
+                  {formErrors.requiredGraduationCredits ? (
+                    <p className="text-sm text-destructive">
+                      {formErrors.requiredGraduationCredits}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="academicElectiveCredits">Tự chọn</Label>
+                  <Input
+                    id="academicElectiveCredits"
+                    type="number"
+                    min="0"
+                    value={electiveGraduationCredits}
+                    onChange={(event) =>
+                      setElectiveGraduationCredits(event.target.value)
+                    }
+                    placeholder="Ví dụ: 6"
+                  />
+                  {formErrors.electiveGraduationCredits ? (
+                    <p className="text-sm text-destructive">
+                      {formErrors.electiveGraduationCredits}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm">
+                  <p className="text-xs text-muted-foreground">Tổng cơ cấu</p>
+                  <p className="mt-1 font-semibold">
+                    {Number(requiredGraduationCredits || 0) +
+                      Number(electiveGraduationCredits || 0)}{" "}
+                    tín chỉ
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    So với mục tiêu: {graduationCredits || "—"}
+                  </p>
+                </div>
+              </div>
+            </div>
           </section>
 
-          <section className="grid gap-4 rounded-xl border bg-muted/20 p-4">
+          <section className="grid gap-4 rounded-lg border bg-muted/20 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h3 className="font-semibold">Thang quy đổi GPA</h3>
@@ -251,7 +384,7 @@ export function AcademicRulesDialog({
             </div>
           </section>
 
-          <section className="grid gap-4 rounded-xl border bg-muted/20 p-4">
+          <section className="grid gap-4 rounded-lg border bg-muted/20 p-4">
             <div>
               <h3 className="font-semibold">Học lại / cải thiện</h3>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -352,50 +485,141 @@ export function AcademicRulesDialog({
               </label>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="improvementLimit">
-                  Ngưỡng tín chỉ cải thiện tham khảo (%)
-                </Label>
-                <Input
-                  id="improvementLimit"
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={optionalNumberToString(
-                    retakeSettings.improvementCreditLimitPercent,
-                  )}
-                  onChange={(event) =>
-                    updateRetakeSettings({
-                      improvementCreditLimitPercent: parseOptionalNumber(
-                        event.target.value,
-                      ),
-                    })
-                  }
-                />
+            <details className="rounded-lg border bg-background p-3">
+              <summary className="cursor-pointer text-sm font-medium">
+                Cảnh báo tín chỉ học lại/cải thiện
+              </summary>
+              <div className="mt-3 grid gap-3">
+                <div className="grid gap-3 rounded-lg border bg-muted/20 p-3 lg:grid-cols-[1fr_180px]">
+                  <div className="grid gap-2">
+                    <Label>Cảnh báo tín chỉ học lại</Label>
+                    <Select
+                      value={retakeSettings.retakeCreditWarningMode ?? "off"}
+                      onValueChange={(value) =>
+                        updateRetakeSettings({
+                          retakeCreditWarningMode: value as CreditWarningMode,
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="off">Tắt cảnh báo</SelectItem>
+                        <SelectItem value="info">Chỉ nhắc thông tin</SelectItem>
+                        <SelectItem value="affects_classification">
+                          Có thể ảnh hưởng xếp loại
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="retakeWarningPercent">
+                      Ngưỡng (%)
+                    </Label>
+                    <Input
+                      id="retakeWarningPercent"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      disabled={
+                        (retakeSettings.retakeCreditWarningMode ?? "off") ===
+                        "off"
+                      }
+                      value={optionalNumberToString(
+                        retakeSettings.retakeCreditWarningPercent,
+                      )}
+                      onChange={(event) =>
+                        updateRetakeSettings({
+                          retakeCreditWarningPercent: parseOptionalNumber(
+                            event.target.value,
+                          ),
+                        })
+                      }
+                    />
+                    {formErrors.retakeCreditWarningPercent ? (
+                      <p className="text-sm text-destructive">
+                        {formErrors.retakeCreditWarningPercent}
+                      </p>
+                    ) : null}
+                  </div>
+                  {graduationCredits ? (
+                    <p className="text-xs text-muted-foreground lg:col-span-2">
+                        Với {graduationCredits} tín chỉ, 5% tương đương{" "}
+                        {(Number(graduationCredits) * 0.05).toLocaleString(
+                          "vi-VN",
+                          { maximumFractionDigits: 1 },
+                        )}{" "}
+                        tín chỉ.
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="grid gap-3 rounded-lg border bg-muted/20 p-3 lg:grid-cols-[1fr_180px]">
+                  <div className="grid gap-2">
+                    <Label>Cảnh báo tín chỉ cải thiện</Label>
+                    <Select
+                      value={
+                        retakeSettings.improvementCreditWarningMode ?? "off"
+                      }
+                      onValueChange={(value) =>
+                        updateRetakeSettings({
+                          improvementCreditWarningMode:
+                            value as CreditWarningMode,
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="off">Tắt cảnh báo</SelectItem>
+                        <SelectItem value="info">Chỉ nhắc thông tin</SelectItem>
+                        <SelectItem value="affects_classification">
+                          Có thể ảnh hưởng xếp loại
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="improvementWarningPercent">
+                      Ngưỡng (%)
+                    </Label>
+                    <Input
+                      id="improvementWarningPercent"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      disabled={
+                        (retakeSettings.improvementCreditWarningMode ??
+                          "off") === "off"
+                      }
+                      value={optionalNumberToString(
+                        retakeSettings.improvementCreditWarningPercent,
+                      )}
+                      onChange={(event) =>
+                        updateRetakeSettings({
+                          improvementCreditWarningPercent: parseOptionalNumber(
+                            event.target.value,
+                          ),
+                        })
+                      }
+                    />
+                    {formErrors.improvementCreditWarningPercent ? (
+                      <p className="text-sm text-destructive">
+                        {formErrors.improvementCreditWarningPercent}
+                      </p>
+                    ) : null}
+                  </div>
+                  <p className="text-xs text-muted-foreground lg:col-span-2">
+                    Nếu trường không giới hạn cải thiện, hãy để Tắt cảnh báo
+                    hoặc Chỉ nhắc thông tin.
+                  </p>
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="retakeLimit">
-                  Ngưỡng tín chỉ học lại tham khảo (%)
-                </Label>
-                <Input
-                  id="retakeLimit"
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={optionalNumberToString(
-                    retakeSettings.retakeCreditLimitPercent,
-                  )}
-                  onChange={(event) =>
-                    updateRetakeSettings({
-                      retakeCreditLimitPercent: parseOptionalNumber(
-                        event.target.value,
-                      ),
-                    })
-                  }
-                />
-              </div>
-            </div>
+            </details>
           </section>
 
           <section className="grid gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">

@@ -15,5 +15,9 @@ export type SchoolOption = {
   academicRulePreset?: {
     gradeScale: GradeScaleItem[];
     retakeSettings: RetakeSettings;
+    graduationCredits?: number;
+    requiredGraduationCredits?: number;
+    electiveGraduationCredits?: number;
+    note?: string;
   };
 };

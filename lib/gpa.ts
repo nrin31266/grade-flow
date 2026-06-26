@@ -8,6 +8,20 @@ import type { RetakeSettings } from "@/types/profile";
 
 export type GpaInputEnrollment = CourseEnrollment;
 
+export type RawTermSummary = {
+  actualTermId: string;
+  actualTermName: string;
+  termOrder: number;
+  enrollmentCount: number;
+  gradedEnrollmentCount: number;
+  pendingCount: number;
+  failedCount: number;
+  rawGpaCredits: number;
+  rawEarnedCredits: number;
+  rawGpa10: number | null;
+  rawGpa4: number | null;
+};
+
 export type TermGpaSummary = {
   actualTermId: string;
   actualTermName: string;
@@ -152,6 +166,18 @@ function getEarnedCredits(
     .reduce((totalCredits, enrollment) => totalCredits + enrollment.credits, 0);
 }
 
+function getRawEarnedCredits(enrollments: CourseEnrollment[]): number {
+  return enrollments
+    .filter(
+      (enrollment) =>
+        enrollment.countsForGraduation === true &&
+        enrollment.score10 !== null &&
+        enrollment.score10 >= 4 &&
+        enrollment.status !== "failed",
+    )
+    .reduce((totalCredits, enrollment) => totalCredits + enrollment.credits, 0);
+}
+
 export function groupEnrollmentsByActualTerm(
   enrollments: CourseEnrollment[],
 ): Array<{
@@ -231,6 +257,37 @@ export function calculateTermGpaSummaries(
           enrollment.status === "pending" ||
           enrollment.status === "in_progress",
       ).length,
+    };
+  });
+}
+
+export function calculateRawTermSummaries(
+  enrollments: CourseEnrollment[],
+): RawTermSummary[] {
+  return groupEnrollmentsByActualTerm(enrollments).map((group) => {
+    const rawWeightedGpa = calculateWeightedGpa(group.enrollments);
+
+    return {
+      actualTermId: group.actualTermId,
+      actualTermName: group.actualTermName,
+      termOrder: group.termOrder,
+      enrollmentCount: group.enrollments.length,
+      gradedEnrollmentCount: group.enrollments.filter(isEnrollmentGraded).length,
+      pendingCount: group.enrollments.filter(
+        (enrollment) =>
+          enrollment.score10 === null ||
+          enrollment.status === "pending" ||
+          enrollment.status === "in_progress",
+      ).length,
+      failedCount: group.enrollments.filter(
+        (enrollment) =>
+          enrollment.status === "failed" ||
+          (enrollment.score10 !== null && enrollment.score10 < 4),
+      ).length,
+      rawGpaCredits: rawWeightedGpa.credits,
+      rawEarnedCredits: getRawEarnedCredits(group.enrollments),
+      rawGpa10: rawWeightedGpa.gpa10,
+      rawGpa4: rawWeightedGpa.gpa4,
     };
   });
 }

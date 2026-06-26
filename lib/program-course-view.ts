@@ -51,6 +51,7 @@ export function filterProgramCourses(
       [
         course.code,
         course.name,
+        ...(course.tags ?? []),
         course.note,
       ]
         .filter(Boolean)

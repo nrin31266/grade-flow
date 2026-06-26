@@ -1,8 +1,10 @@
 import {
   calculateCumulativeGpaSummariesFromEffective,
+  calculateRawTermSummaries,
   getEnrollmentTermOrder,
   groupEnrollmentsByActualTerm,
   type CumulativeGpaSummary,
+  type RawTermSummary,
 } from "@/lib/gpa";
 import type { EffectiveEnrollmentResult } from "@/lib/effective-enrollments";
 import type { CourseEnrollment } from "@/types/academic";
@@ -13,7 +15,8 @@ export type EnrollmentTermGroup = {
   actualTermName: string;
   termOrder: number;
   enrollments: CourseEnrollment[];
-  summary: CumulativeGpaSummary;
+  rawSummary: RawTermSummary;
+  effectiveSummary: CumulativeGpaSummary;
 };
 
 export function groupEnrollmentsWithSummaries(
@@ -25,15 +28,20 @@ export function groupEnrollmentsWithSummaries(
     enrollments,
     settings,
   );
+  const rawSummaries = calculateRawTermSummaries(enrollments);
   const summariesByTermId = new Map(
     summaries.map((summary) => [summary.actualTermId, summary]),
+  );
+  const rawSummariesByTermId = new Map(
+    rawSummaries.map((summary) => [summary.actualTermId, summary]),
   );
 
   return termGroups
     .map((group) => {
       const summary = summariesByTermId.get(group.actualTermId);
+      const rawSummary = rawSummariesByTermId.get(group.actualTermId);
 
-      if (!summary) {
+      if (!summary || !rawSummary) {
         return null;
       }
 
@@ -42,7 +50,8 @@ export function groupEnrollmentsWithSummaries(
         enrollments: [...group.enrollments].sort((first, second) =>
           first.name.localeCompare(second.name, "vi"),
         ),
-        summary,
+        rawSummary,
+        effectiveSummary: summary,
       };
     })
     .filter((group): group is EnrollmentTermGroup => group !== null)

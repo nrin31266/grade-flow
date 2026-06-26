@@ -55,16 +55,19 @@ export const sampleProgramCoursesJson = JSON.stringify(
   2,
 );
 
-export const aiProgramCoursePrompt = `Hãy đọc bảng chương trình học / điều kiện tốt nghiệp trong ảnh hoặc PDF và trích xuất danh sách học phần thành JSON. Chỉ trả về JSON hợp lệ, không giải thích. Không thêm markdown.
+export const aiProgramCoursePrompt = `Bạn là trợ lý trích xuất dữ liệu. Từ dữ liệu người dùng cung cấp (ảnh chụp màn hình, PDF chương trình đào tạo, hoặc nội dung copy từ cổng thông tin đào tạo), hãy trích xuất danh sách học phần thành JSON. CHỈ trả về JSON hợp lệ, không giải thích, không markdown.
 
-Đây là chương trình học / kế hoạch đào tạo, không phải bảng điểm.
-Không cần năm học thật, học kỳ thật, điểm hệ 10, điểm chữ hoặc GPA.
-Nếu không thấy mã học phần thì bỏ trống code.
-Nếu không rõ kỳ kế hoạch thì bỏ trống plannedTermNumber.
-Nếu không rõ khối kiến thức thì dùng "other".
-Nếu không rõ bắt buộc/tự chọn thì dùng "required".
+Đây là chương trình đào tạo, KHÔNG phải bảng điểm.
+Chỉ lấy: mã học phần (nếu có), tên, số tín chỉ, kỳ kế hoạch, khối kiến thức, loại bắt buộc/tự chọn.
+Không lấy: năm học thật, học kỳ thật, điểm số, điểm chữ, GPA.
 
-Format:
+Quy tắc:
+- Nếu không thấy mã → bỏ trống "code"
+- Nếu không rõ kỳ kế hoạch → bỏ trống plannedTermNumber (null)
+- Phân loại khối kiến thức knowledgeBlock: "general" (chung), "foundation" (cơ sở ngành), "major" (chuyên ngành), "specialized" (chuyên sâu), "support" (hỗ trợ), "graduation" (tốt nghiệp), "other" (khác)
+- requirementType: "required" (bắt buộc) hoặc "elective" (tự chọn)
+
+Format JSON:
 {
   "courses": [
     {

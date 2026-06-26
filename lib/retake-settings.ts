@@ -5,16 +5,28 @@ export const defaultRetakeSettings: RetakeSettings = {
   retakeTriggerMode: "failed_only",
   retakeScoreThreshold: 4,
   improvementEnabled: true,
-  improvementCreditLimitPercent: 10,
-  retakeCreditLimitPercent: 10,
+  retakeCreditWarningPercent: 5,
+  retakeCreditWarningMode: "affects_classification",
+  improvementCreditWarningPercent: undefined,
+  improvementCreditWarningMode: "info",
   countFailedAttemptCredits: false,
 };
 
 export function getEffectiveRetakeSettings(
   profile?: UserProfile | null,
 ): RetakeSettings {
-  return {
+  const mergedSettings = {
     ...defaultRetakeSettings,
     ...profile?.retakeSettings,
+  };
+
+  return {
+    ...mergedSettings,
+    retakeCreditWarningPercent:
+      mergedSettings.retakeCreditWarningPercent ??
+      mergedSettings.retakeCreditLimitPercent,
+    improvementCreditWarningPercent:
+      mergedSettings.improvementCreditWarningPercent ??
+      mergedSettings.improvementCreditLimitPercent,
   };
 }

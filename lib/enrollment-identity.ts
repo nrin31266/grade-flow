@@ -7,7 +7,9 @@ export function normalizeCourseIdentityText(value: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/đ/g, "d")
-    .replace(/[^a-z0-9\s.-]/g, " ")
+    .replace(/[()]/g, " ")
+    .replace(/[-_/]/g, " ")
+    .replace(/[^a-z0-9\s.]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
