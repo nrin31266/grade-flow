@@ -14,8 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" className={beVietnamPro.variable}>
-      <Analytics/>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
