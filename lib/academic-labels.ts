@@ -57,7 +57,7 @@ export const enrollmentEffectLabels: Record<
   },
   duplicate_lower_score: {
     label: "Lượt cũ",
-    description: "Vẫn thuộc học kỳ này nhưng không dùng cho GPA tích lũy.",
+    description: "Vẫn thuộc học kỳ này nhưng không dùng cho GPA hiệu lực.",
     className: "border-amber-200 bg-amber-50 text-amber-800",
   },
 };

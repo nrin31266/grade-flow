@@ -8,7 +8,10 @@ import { ProgramCourseImportDialog } from "@/components/courses/ProgramCourseImp
 import { TranscriptImportDialog } from "@/components/enrollments/TranscriptImportDialog";
 import { GoalProjectionCard } from "@/components/goals/GoalProjectionCard";
 import { GoalSettingsDialog } from "@/components/goals/GoalSettingsDialog";
-import { DashboardHeroSummary } from "@/components/dashboard/DashboardHeroSummary";
+import {
+  DashboardHeroSummary,
+  type RetakeImprovementHeroSummary,
+} from "@/components/dashboard/DashboardHeroSummary";
 import { CreditProgressChart } from "@/components/charts/CreditProgressChart";
 import { GradeDistributionChart } from "@/components/charts/GradeDistributionChart";
 import { GpaTrendChart } from "@/components/charts/GpaTrendChart";
@@ -34,6 +37,7 @@ import { resolveEffectiveEnrollments } from "@/lib/effective-enrollments";
 import { calculateGpaGoalProjection } from "@/lib/gpa-goals";
 import type { ProgramCourseImportSummary } from "@/lib/program-course-import-merge";
 import { getProgramCourseStats } from "@/lib/program-course-view";
+import { buildRetakeKindByEnrollmentId } from "@/lib/retake-kind";
 
 import {
   mergeTranscriptImport,
@@ -98,6 +102,57 @@ export default function DashboardPage() {
     () => resolveEffectiveEnrollments(enrollments, retakeSettings),
     [enrollments, retakeSettings],
   );
+  const retakeImprovementSummary = useMemo<RetakeImprovementHeroSummary>(() => {
+    const kindByEnrollmentId = buildRetakeKindByEnrollmentId(
+      enrollments,
+      retakeSettings,
+    );
+    const sumCredits = (kind: "retake" | "improvement" | "retake_or_improvement") =>
+      enrollments
+        .filter((enrollment) => kindByEnrollmentId[enrollment.id] === kind)
+        .reduce((total, enrollment) => total + enrollment.credits, 0);
+    const retakeCredits = sumCredits("retake");
+    const improvementCredits = sumCredits("improvement");
+    const uncertainCredits = sumCredits("retake_or_improvement");
+    const targetCredits = profile?.graduationCredits;
+    const getPercent = (credits: number) =>
+      targetCredits && targetCredits > 0 ? (credits / targetCredits) * 100 : null;
+    const retakePercent = getPercent(retakeCredits);
+    const improvementPercent = getPercent(improvementCredits);
+    const uncertainPercent = getPercent(uncertainCredits);
+    const getWarningLevel = (
+      percent: number | null,
+      threshold: number | undefined,
+      mode: "off" | "info" | "affects_classification" | undefined,
+    ): RetakeImprovementHeroSummary["retakeWarningLevel"] => {
+      if (percent === null || threshold === undefined || percent <= threshold || mode === "off") {
+        return "normal";
+      }
+
+      return mode === "affects_classification" ? "danger" : "warning";
+    };
+    const effectiveCredits = overallGpaSummary.earnedGraduationCredits;
+
+    return {
+      effectiveCredits,
+      retakeCredits,
+      retakePercent,
+      retakeWarningLevel: getWarningLevel(
+        retakePercent,
+        retakeSettings.retakeCreditWarningPercent,
+        retakeSettings.retakeCreditWarningMode,
+      ),
+      improvementCredits,
+      improvementPercent,
+      improvementWarningLevel: getWarningLevel(
+        improvementPercent,
+        retakeSettings.improvementCreditWarningPercent,
+        retakeSettings.improvementCreditWarningMode,
+      ),
+      uncertainCredits,
+      uncertainPercent,
+    };
+  }, [enrollments, overallGpaSummary.earnedGraduationCredits, profile?.graduationCredits, retakeSettings]);
   const enrollmentGroups: EnrollmentTermGroup[] = useMemo(
     () => groupEnrollmentsWithSummaries(enrollments, retakeSettings),
     [enrollments, retakeSettings],
@@ -227,6 +282,7 @@ export default function DashboardPage() {
         overallSummary={overallGpaSummary}
         graduationCredits={profile.graduationCredits}
         retakeSettings={retakeSettings}
+        retakeImprovementSummary={retakeImprovementSummary}
       />
 
       {/* ─── Goal ─── */}
@@ -243,7 +299,12 @@ export default function DashboardPage() {
         <div className="grid gap-4">
           <div className="min-w-0"><GpaTrendChart data={gpaTrendData} /></div>
           <div className="grid gap-4 md:grid-cols-2 min-w-0">
-            <div className="min-w-0"><CreditProgressChart data={creditTrendData} /></div>
+            <div className="min-w-0">
+              <CreditProgressChart
+                data={creditTrendData}
+                effectiveCredits={overallGpaSummary.earnedGraduationCredits}
+              />
+            </div>
             <div className="min-w-0"><TermPerformanceChart data={gpaTrendData} /></div>
           </div>
           <div className="min-w-0"><GradeDistributionChart data={gradeDistribution} /></div>
@@ -258,7 +319,7 @@ export default function DashboardPage() {
               <h2 className="text-base font-semibold">Bảng điểm gần đây</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {latestTerm
-                  ? `${latestTerm.actualTermName} · ${latestTerm.rawSummary.enrollmentCount} lượt học`
+                  ? `${latestTerm.actualTermName}, ${latestTerm.rawSummary.enrollmentCount} lượt học`
                   : "Chưa có học kỳ thật nào."}
               </p>
             </div>
@@ -290,7 +351,7 @@ export default function DashboardPage() {
             <div>
               <h2 className="text-base font-semibold">Kế hoạch học tập</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {allCourseStats.courseCount} học phần ·{" "}
+                {allCourseStats.courseCount} học phần, {" "}
                 {allCourseStats.totalCredits} tín chỉ trong kế hoạch.
               </p>
               <p className="mt-1 text-sm text-muted-foreground">

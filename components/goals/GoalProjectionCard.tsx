@@ -237,7 +237,7 @@ export function GoalProjectionCard({
               Xem công thức
             </summary>
             <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground/50">
-              Điểm cần đạt = (GPA mục tiêu × tổng TC mục tiêu − GPA hiện tại × TC đã tính GPA) / TC còn lại
+              Điểm cần đạt = (GPA mục tiêu × tổng TC mục tiêu − GPA hiệu lực × TC đã tính GPA) / TC còn lại
             </p>
           </details>
 
@@ -260,7 +260,7 @@ export function GoalProjectionCard({
                   >
                     <span className="font-medium text-slate-900 dark:text-slate-100">{c.name}</span>
                     <span className="text-muted-foreground">
-                      {c.currentLetterGrade ?? c.currentScore10?.toFixed(1) ?? "—"} · {c.currentScore10?.toFixed(1) ?? "—"} · {formatCredits(c.credits)} TC
+                      {c.currentLetterGrade ?? c.currentScore10?.toFixed(1) ?? "—"}, {c.currentScore10?.toFixed(1) ?? "—"}, {formatCredits(c.credits)} TC
                     </span>
                     <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                       → A (4.0/10.0)

@@ -44,10 +44,10 @@ export function TranscriptOverviewPanel({
     <div className="rounded-xl border border-sky-100 bg-gradient-to-br from-white to-sky-50/40 p-5 shadow-sm dark:border-sky-900/50 dark:from-background dark:to-sky-950/10">
       {/* 3-column layout: GPA | Credits | Warnings */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {/* ─── GPA tích lũy ─── */}
+        {/* ─── GPA hiệu lực ─── */}
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            GPA tích lũy
+            GPA hiệu lực
           </p>
 
           {cumulativeGpa4 !== null ? (
@@ -161,7 +161,7 @@ export function TranscriptOverviewPanel({
               <span className="font-medium text-foreground">
                 {insights.bestTerm.actualTermName}
               </span>{" "}
-              · GPA 4{" "}
+              , GPA 4{" "}
               <span className="font-medium text-foreground">
                 {formatGpa(insights.bestTerm.gpa4)}
               </span>
@@ -173,7 +173,7 @@ export function TranscriptOverviewPanel({
               <span className="font-medium text-foreground">
                 {insights.weakestTerm.actualTermName}
               </span>{" "}
-              · GPA 4{" "}
+              , GPA 4{" "}
               <span className="font-medium text-foreground">
                 {formatGpa(insights.weakestTerm.gpa4)}
               </span>
@@ -193,7 +193,7 @@ export function TranscriptOverviewPanel({
 
       {/* ─── Footer help text ─── */}
       <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground/60">
-        GPA tích lũy dùng các lượt học hiệu lực theo cấu hình học vụ. Tín chỉ
+        GPA hiệu lực dùng các lượt học hiệu lực theo cấu hình học vụ. Tín chỉ
         đã đạt không cộng trùng các môn học lại/cải thiện.
       </p>
     </div>

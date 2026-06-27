@@ -230,7 +230,7 @@ export function EditEnrollmentDialog({
                   <span className="font-medium text-foreground">
                     {gradeScaleResult.letterGrade}
                   </span>{" "}
-                  · hệ 4:{" "}
+                  , hệ 4:{" "}
                   <span className="font-medium text-foreground">
                     {gradeScaleResult.gpa4}
                   </span>
@@ -267,7 +267,7 @@ export function EditEnrollmentDialog({
                     checked={isRetake}
                     onChange={(event) => setIsRetake(event.target.checked)}
                   />
-                  Học lại / cải thiện
+                  Học lại/cải thiện
                 </label>
               </div>
 

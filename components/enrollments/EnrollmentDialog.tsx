@@ -338,7 +338,7 @@ export function EnrollmentDialog({
                   <SelectContent>
                     {programCourses.map((course) => (
                       <SelectItem key={course.id} value={course.id}>
-                        {course.name} · {course.credits} tín chỉ ·{" "}
+                        {course.name}, {course.credits} tín chỉ, {" "}
                         {course.plannedTermNumber
                           ? `Kỳ kế hoạch ${course.plannedTermNumber}`
                           : "Chưa gán kỳ"}
@@ -464,7 +464,7 @@ export function EnrollmentDialog({
                   <span className="font-medium text-foreground">
                     {gradeScaleResult.letterGrade}
                   </span>{" "}
-                  · hệ 4:{" "}
+                  , hệ 4:{" "}
                   <span className="font-medium text-foreground">
                     {gradeScaleResult.gpa4}
                   </span>
@@ -508,7 +508,7 @@ export function EnrollmentDialog({
                     checked={isRetake}
                     onChange={(event) => setIsRetake(event.target.checked)}
                   />
-                  Học lại / cải thiện
+                  Học lại/cải thiện
                 </label>
               </div>
 

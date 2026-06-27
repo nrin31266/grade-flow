@@ -270,9 +270,9 @@ export function TranscriptImportDialog({
                 <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">
                   ✅ {validEnrollments.length} lượt học hợp lệ
                   <span className="ml-2 text-emerald-600 dark:text-emerald-400">
-                    · {validEnrollments.filter(e => e.score10 !== null).length} có điểm
-                    · {validEnrollments.filter(e => e.programCourseId).length} khớp CT
-                    · {duplicateSplit.duplicateEnrollments.length} trùng
+                    , {validEnrollments.filter(e => e.score10 !== null).length} có điểm
+                    , {validEnrollments.filter(e => e.programCourseId).length} khớp CT
+                    , {duplicateSplit.duplicateEnrollments.length} trùng
                   </span>
                 </div>
               )}

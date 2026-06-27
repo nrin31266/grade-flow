@@ -16,7 +16,7 @@ function getSummaryNote(summary: CumulativeGpaSummary): string {
     notes.push(`${summary.failedCount} chưa đạt`);
   }
 
-  return notes.length > 0 ? notes.join(" · ") : "—";
+  return notes.length > 0 ? notes.join(", ") : "—";
 }
 
 export function TermGpaTable({ summaries }: TermGpaTableProps) {
@@ -36,14 +36,14 @@ export function TermGpaTable({ summaries }: TermGpaTableProps) {
             <th className="w-44 px-4 py-3 font-medium">Kỳ thật</th>
             <th className="w-32 px-4 py-3 font-medium">Lượt học có điểm</th>
             <th className="w-28 px-4 py-3 font-medium">Tín chỉ GPA</th>
-            <th className="w-32 px-4 py-3 font-medium">GPA 10 hiệu lực</th>
-            <th className="w-32 px-4 py-3 font-medium">GPA 4 hiệu lực</th>
+            <th className="w-32 px-4 py-3 font-medium">GPA 10 kỳ</th>
+            <th className="w-32 px-4 py-3 font-medium">GPA 4 kỳ</th>
             <th className="w-32 px-4 py-3 font-medium">GPA 10 lượt học</th>
             <th className="w-32 px-4 py-3 font-medium">GPA 4 lượt học</th>
             <th className="w-32 px-4 py-3 font-medium">Tín chỉ đạt kỳ</th>
-            <th className="w-32 px-4 py-3 font-medium">GPA 10 lũy kế</th>
-            <th className="w-32 px-4 py-3 font-medium">GPA 4 lũy kế</th>
-            <th className="w-36 px-4 py-3 font-medium">Tín chỉ đạt lũy kế</th>
+            <th className="w-32 px-4 py-3 font-medium">GPA 10 hiệu lực</th>
+            <th className="w-32 px-4 py-3 font-medium">GPA 4 hiệu lực</th>
+            <th className="w-36 px-4 py-3 font-medium">TC hiệu lực</th>
             <th className="w-40 px-4 py-3 font-medium">Ghi chú</th>
           </tr>
         </thead>
@@ -69,7 +69,7 @@ export function TermGpaTable({ summaries }: TermGpaTableProps) {
                 {formatGpa(summary.cumulativeGpa4)}
               </td>
               <td className="px-4 py-3">
-                {formatCredits(summary.cumulativeEarnedCredits)}
+                {formatCredits(summary.cumulativeCredits)}
               </td>
               <td className="px-4 py-3 text-muted-foreground">
                 {getSummaryNote(summary)}

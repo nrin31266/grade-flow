@@ -5,6 +5,11 @@ import {
   type EnrollmentEffectStatus,
 } from "@/lib/effective-enrollments";
 import type { RetakeSettings } from "@/types/profile";
+import {
+  buildRetakeKindByEnrollmentId,
+  combineRetakeKinds,
+  type RetakeKind,
+} from "@/lib/retake-kind";
 
 export type GpaInputEnrollment = CourseEnrollment;
 
@@ -37,6 +42,8 @@ export type TermGpaSummary = {
   rawGpa4: number | null;
   failedCount: number;
   pendingCount: number;
+  retakeCount: number;
+  retakeKind: RetakeKind | null;
 };
 
 export type CumulativeGpaSummary = TermGpaSummary & {
@@ -68,6 +75,14 @@ function isGpaStatus(enrollment: CourseEnrollment): boolean {
 
 export function isEnrollmentGraded(enrollment: CourseEnrollment): boolean {
   return enrollment.score10 !== null && isGpaStatus(enrollment);
+}
+
+function isRetakeOrImprovement(enrollment: CourseEnrollment): boolean {
+  return (
+    enrollment.isRetake ||
+    enrollment.replacesEnrollmentId !== undefined ||
+    (enrollment.attemptNumber ?? 1) > 1
+  );
 }
 
 export function isEnrollmentIncludedInGpa(
@@ -257,6 +272,10 @@ export function calculateTermGpaSummaries(
           enrollment.status === "pending" ||
           enrollment.status === "in_progress",
       ).length,
+      retakeCount: group.enrollments.filter(isRetakeOrImprovement).length,
+      retakeKind: group.enrollments.some(isRetakeOrImprovement)
+        ? "retake_or_improvement"
+        : null,
     };
   });
 }
@@ -297,6 +316,10 @@ export function calculateTermGpaSummariesFromEffective(
   settings: RetakeSettings,
 ): TermGpaSummary[] {
   const effectiveResult = resolveEffectiveEnrollments(enrollments, settings);
+  const retakeKindByEnrollmentId = buildRetakeKindByEnrollmentId(
+    enrollments,
+    settings,
+  );
 
   return groupEnrollmentsByActualTerm(enrollments).map((group) => {
     const rawWeightedGpa = calculateWeightedGpa(group.enrollments);
@@ -332,6 +355,12 @@ export function calculateTermGpaSummariesFromEffective(
           enrollment.status === "pending" ||
           enrollment.status === "in_progress",
       ).length,
+      retakeCount: group.enrollments.filter(isRetakeOrImprovement).length,
+      retakeKind: combineRetakeKinds(
+        group.enrollments.map(
+          (enrollment) => retakeKindByEnrollmentId[enrollment.id],
+        ),
+      ),
     };
   });
 }
@@ -366,23 +395,24 @@ export function calculateCumulativeGpaSummariesFromEffective(
   settings: RetakeSettings,
 ): CumulativeGpaSummary[] {
   const termGroups = groupEnrollmentsByActualTerm(enrollments);
+  const historicalEnrollments: CourseEnrollment[] = [];
 
   return termGroups.map((group) => {
-    const currentEnrollments = enrollments.filter(
-      (enrollment) => getEnrollmentTermOrder(enrollment) <= group.termOrder,
-    );
-    const currentEffectiveResult = resolveEffectiveEnrollments(
-      currentEnrollments,
+    // Resolve the effective GPA from the transcript as it existed in each term.
+    // A later attempt must never change an already-rendered earlier term.
+    historicalEnrollments.push(...group.enrollments);
+    const historicalEffectiveResult = resolveEffectiveEnrollments(
+      historicalEnrollments,
       settings,
     );
-    const termEffectiveResult = resolveEffectiveEnrollments(enrollments, settings);
-    const termSummary = calculateTermGpaSummariesFromEffective(
-      enrollments,
+    const retakeKindByEnrollmentId = buildRetakeKindByEnrollmentId(
+      historicalEnrollments,
       settings,
-    ).find((summary) => summary.actualTermId === group.actualTermId);
-    const cumulativeGpa = calculateWeightedGpa(
-      currentEnrollments,
-      currentEffectiveResult.effectStatusByEnrollmentId,
+    );
+    const termSummary = calculateTermGpaSummaries(group.enrollments)[0];
+    const effectiveGpa = calculateWeightedGpa(
+      historicalEnrollments,
+      historicalEffectiveResult.effectStatusByEnrollmentId,
     );
 
     return {
@@ -394,6 +424,8 @@ export function calculateCumulativeGpaSummariesFromEffective(
         gradedCourseCount: group.enrollments.filter(isEnrollmentGraded).length,
         failedCount: 0,
         pendingCount: 0,
+        retakeCount: 0,
+        retakeKind: null,
         gpaCredits: 0,
         earnedCredits: 0,
         gpa10: null,
@@ -406,15 +438,20 @@ export function calculateCumulativeGpaSummariesFromEffective(
         termSummary?.earnedCredits ??
         getEarnedCredits(
           group.enrollments,
-          termEffectiveResult.effectStatusByEnrollmentId,
+          historicalEffectiveResult.effectStatusByEnrollmentId,
         ),
-      cumulativeCredits: cumulativeGpa.credits,
-      cumulativeEarnedCredits: getEarnedCredits(
-        currentEnrollments,
-        currentEffectiveResult.effectStatusByEnrollmentId,
+      retakeKind: combineRetakeKinds(
+        group.enrollments.map(
+          (enrollment) => retakeKindByEnrollmentId[enrollment.id],
+        ),
       ),
-      cumulativeGpa10: cumulativeGpa.gpa10,
-      cumulativeGpa4: cumulativeGpa.gpa4,
+      cumulativeCredits: effectiveGpa.credits,
+      cumulativeEarnedCredits: getEarnedCredits(
+        historicalEnrollments,
+        historicalEffectiveResult.effectStatusByEnrollmentId,
+      ),
+      cumulativeGpa10: effectiveGpa.gpa10,
+      cumulativeGpa4: effectiveGpa.gpa4,
     };
   });
 }

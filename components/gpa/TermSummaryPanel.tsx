@@ -1,5 +1,6 @@
 import type { CumulativeGpaSummary } from "@/lib/gpa";
 import { formatCredits, formatGpa } from "@/lib/number-format";
+import type { RetakeKind } from "@/lib/retake-kind";
 
 type TermSummaryPanelProps = {
   summaries: CumulativeGpaSummary[];
@@ -24,9 +25,24 @@ function getWarnings(summary: CumulativeGpaSummary): string[] {
   return warnings;
 }
 
-export function TermSummaryPanel({
-  summaries,
-}: TermSummaryPanelProps) {
+function Delta({ value, digits = 2 }: { value: number | null; digits?: number }) {
+  if (value === null) return null;
+
+  return (
+    <span className={value >= 0 ? "text-xs text-emerald-500" : "text-xs text-rose-500"}>
+      {value >= 0 ? "+" : ""}
+      {value.toFixed(digits)}
+    </span>
+  );
+}
+
+const termRetakeBadge: Record<RetakeKind, string> = {
+  retake: "Có học lại",
+  improvement: "Có cải thiện",
+  retake_or_improvement: "Học lại/cải thiện",
+};
+
+export function TermSummaryPanel({ summaries }: TermSummaryPanelProps) {
   if (summaries.length === 0) {
     return (
       <p className="rounded-lg border border-dashed bg-muted/40 p-3 text-sm text-muted-foreground">
@@ -35,128 +51,92 @@ export function TermSummaryPanel({
     );
   }
 
+  const sortedSummaries = [...summaries].sort(
+    (first, second) => first.termOrder - second.termOrder,
+  );
+  const hasRetakeOrImprovement = sortedSummaries.some(
+    (summary) => summary.retakeCount > 0,
+  );
+
   return (
     <section className="rounded-lg border bg-background shadow-sm">
       <div className="border-b px-4 py-3">
         <h2 className="text-base font-semibold">Bảng tổng kết học kỳ</h2>
         <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-          Tổng hợp kết quả học tập theo từng học kỳ thật. TL là tích lũy —
-          GPA và tín chỉ đã xử lý học lại/cải thiện.
+          Bảng tổng hợp theo học kỳ thật. GPA/TC hiệu lực đã xử lý học
+          lại/cải thiện và được dùng để theo dõi mục tiêu tốt nghiệp.
         </p>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[920px] text-sm">
+        <table className="w-full min-w-[900px] text-sm">
           <thead className="bg-sky-50 text-left text-muted-foreground dark:bg-sky-950/20">
             <tr>
               <th className="w-40 px-3 py-2.5 font-medium">Học kỳ</th>
               <th className="w-24 px-3 py-2.5 text-center font-medium">Có điểm</th>
               <th className="w-16 px-3 py-2.5 text-right font-medium">TC GPA</th>
               <th className="w-20 px-3 py-2.5 text-right font-medium">GPA 10</th>
-              <th className="w-28 px-3 py-2.5 text-right font-medium">GPA 4</th>
+              <th className="w-20 px-3 py-2.5 text-right font-medium">GPA 4</th>
               <th className="w-16 px-3 py-2.5 text-right font-medium">TC đạt</th>
-              <th className="w-20 px-3 py-2.5 text-right font-medium">GPA 10 TL</th>
-              <th className="w-20 px-3 py-2.5 text-right font-medium">GPA 4 TL</th>
-              <th className="w-16 px-3 py-2.5 text-right font-medium">TC TL</th>
+              <th className="w-28 px-3 py-2.5 text-right font-medium">GPA 10 hiệu lực</th>
+              <th className="w-28 px-3 py-2.5 text-right font-medium">GPA 4 hiệu lực</th>
+              <th className="w-24 px-3 py-2.5 text-right font-medium">TC hiệu lực</th>
               <th className="w-16 px-3 py-2.5 text-center font-medium">XLoại</th>
             </tr>
           </thead>
           <tbody>
-            {[...summaries]
-              .sort((a, b) => a.termOrder - b.termOrder)
-              .map((summary, index, arr) => {
+            {sortedSummaries.map((summary, index) => {
+              const previousSummary = sortedSummaries[index - 1];
               const grade = getGradeLabel(summary.rawGpa4);
               const warnings = getWarnings(summary);
-
-              // Cumulative change from previous (older) term
-              const delta4 =
-                index > 0 &&
-                summary.cumulativeGpa4 !== null &&
-                arr[index - 1].cumulativeGpa4 !== null
-                  ? summary.cumulativeGpa4 - arr[index - 1].cumulativeGpa4!
+              const effectiveGpa10Delta =
+                previousSummary?.cumulativeGpa10 !== null &&
+                previousSummary?.cumulativeGpa10 !== undefined &&
+                summary.cumulativeGpa10 !== null
+                  ? summary.cumulativeGpa10 - previousSummary.cumulativeGpa10
                   : null;
-              const delta10 =
-                index > 0 &&
-                summary.cumulativeGpa10 !== null &&
-                arr[index - 1].cumulativeGpa10 !== null
-                  ? summary.cumulativeGpa10 - arr[index - 1].cumulativeGpa10!
+              const effectiveGpa4Delta =
+                previousSummary?.cumulativeGpa4 !== null &&
+                previousSummary?.cumulativeGpa4 !== undefined &&
+                summary.cumulativeGpa4 !== null
+                  ? summary.cumulativeGpa4 - previousSummary.cumulativeGpa4
                   : null;
+              const effectiveCreditsDelta = previousSummary
+                ? summary.cumulativeCredits - previousSummary.cumulativeCredits
+                : null;
 
               return (
-                <tr
-                  key={summary.actualTermId}
-                  className={`border-t transition-colors ${
-                    index % 2 === 1 ? "bg-muted/20" : ""
-                  }`}
-                >
+                <tr key={summary.actualTermId} className={`border-t transition-colors ${index % 2 === 1 ? "bg-muted/20" : ""}`}>
                   <td className="px-3 py-2.5 font-medium">
                     {summary.actualTermName}
+                    {summary.retakeKind && (
+                      <span
+                        title="Kỳ này có lượt học thay thế điểm cũ, nên GPA hiệu lực có thể thay đổi khác với GPA học kỳ."
+                        className="ml-2 inline-flex rounded-full border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300"
+                      >
+                        {termRetakeBadge[summary.retakeKind]}
+                      </span>
+                    )}
                     {warnings.length > 0 && (
-                      <span className="ml-1.5 text-xs text-muted-foreground">
-                        {warnings.join(" ")}
-                      </span>
+                      <span className="ml-1.5 text-xs text-muted-foreground">{warnings.join(" ")}</span>
                     )}
                   </td>
-                  <td className="px-3 py-2.5 text-center">
-                    {summary.gradedCourseCount}/{summary.courseCount}
+                  <td className="px-3 py-2.5 text-center">{summary.gradedCourseCount}/{summary.courseCount}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">{formatCredits(summary.gpaCredits)}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">{formatGpa(summary.rawGpa10)}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">{formatGpa(summary.rawGpa4)}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">{formatCredits(summary.earnedCredits)}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">
+                    <span className="inline-flex items-center gap-1">{formatGpa(summary.cumulativeGpa10)}<Delta value={effectiveGpa10Delta} /></span>
                   </td>
                   <td className="px-3 py-2.5 text-right tabular-nums">
-                    {formatCredits(summary.gpaCredits)}
+                    <span className="inline-flex items-center gap-1">{formatGpa(summary.cumulativeGpa4)}<Delta value={effectiveGpa4Delta} /></span>
                   </td>
                   <td className="px-3 py-2.5 text-right tabular-nums">
-                    {formatGpa(summary.rawGpa10)}
-                  </td>
-                  <td className="px-3 py-2.5 text-right tabular-nums">
-                    {formatGpa(summary.rawGpa4)}
-                  </td>
-                  <td className="px-3 py-2.5 text-right tabular-nums">
-                    {formatCredits(summary.earnedCredits)}
-                  </td>
-                  <td className="px-3 py-2.5 text-right tabular-nums">
-                    <span className="inline-flex items-center gap-1">
-                      {formatGpa(summary.cumulativeGpa10)}
-                      {delta10 !== null && (
-                        <span
-                          className={
-                            delta10 >= 0
-                              ? "text-emerald-500 text-xs"
-                              : "text-rose-500 text-xs"
-                          }
-                        >
-                          {delta10 >= 0 ? "+" : ""}
-                          {delta10.toFixed(2)}
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5 text-right tabular-nums">
-                    <span className="inline-flex items-center gap-1">
-                      {formatGpa(summary.cumulativeGpa4)}
-                      {delta4 !== null && (
-                        <span
-                          className={
-                            delta4 >= 0
-                              ? "text-emerald-500 text-xs"
-                              : "text-rose-500 text-xs"
-                          }
-                        >
-                          {delta4 >= 0 ? "+" : ""}
-                          {delta4.toFixed(2)}
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5 text-right tabular-nums">
-                    {formatCredits(summary.cumulativeEarnedCredits)}
+                    <span className="inline-flex items-center gap-1">{formatCredits(summary.cumulativeCredits)}<Delta value={effectiveCreditsDelta} digits={0} /></span>
                   </td>
                   <td className="px-3 py-2.5 text-center">
-                    {grade ? (
-                      <span className={`text-xs font-semibold ${grade.color}`}>
-                        {grade.label}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
+                    {grade ? <span className={`text-xs font-semibold ${grade.color}`}>{grade.label}</span> : <span className="text-xs text-muted-foreground">—</span>}
                   </td>
                 </tr>
               );
@@ -165,10 +145,11 @@ export function TermSummaryPanel({
         </table>
       </div>
 
-      <p className="border-t px-4 py-2.5 text-xs text-muted-foreground">
-        Công thức GPA học kỳ = tổng(điểm × tín chỉ) / tổng(tín chỉ tính GPA).
-        GPA tích lũy dùng các lượt học hiệu lực theo cấu hình học vụ.
-      </p>
+      {hasRetakeOrImprovement && (
+        <p className="border-t px-4 py-2.5 text-xs text-muted-foreground">
+          GPA hiệu lực có thể tăng khi học lại/cải thiện thay thế điểm cũ thấp hơn.
+        </p>
+      )}
     </section>
   );
 }

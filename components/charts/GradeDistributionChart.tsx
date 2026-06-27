@@ -62,7 +62,7 @@ export function GradeDistributionChart({
               formatter={(_value, _name, props) => {
                 const p = props?.payload as GradeDistributionItem | undefined;
                 if (!p) return ["—"];
-                return [`${p.count} lượt · ${formatCredits(p.credits)} tín chỉ · ${p.percent.toFixed(1)}%`, p.letterGrade];
+                return [`${p.count} lượt (${formatCredits(p.credits)} tín chỉ, ${p.percent.toFixed(1)}%)`, p.letterGrade];
               }}
             />
             <Bar dataKey="count" name="Số lượt học" radius={[0, 4, 4, 0]} barSize={20}

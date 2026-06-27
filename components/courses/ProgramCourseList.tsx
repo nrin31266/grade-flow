@@ -124,7 +124,7 @@ export function ProgramCourseList({
                       })()}
                       {scoredEffectiveEnrollment.isRetake && (
                         <span className="text-xs text-muted-foreground">
-                          · Cải thiện
+                          , Cải thiện
                         </span>
                       )}
                     </div>

@@ -186,7 +186,7 @@ export function ProgramCourseToolbar({
       ) : null}
 
       <p className="text-sm text-muted-foreground">
-        {filteredCount} đang hiển thị / {totalCount} học phần ·{" "}
+        {filteredCount} đang hiển thị / {totalCount} học phần, {" "}
         {filteredCredits} tín chỉ trong khung
         {filteredCredits !== totalCredits
           ? ` / ${totalCredits} tín chỉ toàn bộ khung`

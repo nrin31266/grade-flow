@@ -9,7 +9,10 @@ import { EnrollmentDialog } from "@/components/enrollments/EnrollmentDialog";
 import { EnrollmentTermSections } from "@/components/enrollments/EnrollmentTermSections";
 import { TranscriptImportDialog } from "@/components/enrollments/TranscriptImportDialog";
 import { TermSummaryPanel } from "@/components/gpa/TermSummaryPanel";
-import { TranscriptStatsStrip } from "@/components/transcript/TranscriptStatsStrip";
+import {
+  TranscriptStatsStrip,
+  type TranscriptStats,
+} from "@/components/transcript/TranscriptStatsStrip";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { AcademicRulesDialog } from "@/components/settings/AcademicRulesDialog";
 import { ResetWorkspaceDialog } from "@/components/settings/ResetWorkspaceDialog";
@@ -21,6 +24,7 @@ import {
   type EnrollmentTermGroup,
 } from "@/lib/enrollment-view";
 import { getGradeScaleResult } from "@/lib/grade-scale";
+import { buildRetakeKindByEnrollmentId } from "@/lib/retake-kind";
 import {
   calculateCumulativeGpaSummariesFromEffective,
 } from "@/lib/gpa";
@@ -87,23 +91,60 @@ export default function TranscriptPage() {
     [enrollments, retakeSettings],
   );
 
-  // Stats for transcript view
-  const transcriptStats = useMemo(() => {
-    const pendingCount = enrollments.filter(
-      (e) => e.score10 === null || e.status === "pending" || e.status === "in_progress",
-    ).length;
-    const failedCount = enrollments.filter(
-      (e) => e.status === "failed" || (e.score10 !== null && e.score10 < 4),
-    ).length;
-    const retakeCount = enrollments.filter((e) => e.isRetake).length;
-    const notCountedCount = enrollments.filter(
-      (e) => {
-        const s = effectiveEnrollmentResult.effectStatusByEnrollmentId[e.id];
-        return s?.isEffectiveForGpa === false && e.score10 !== null;
-      },
-    ).length;
-    return { pendingCount, failedCount, retakeCount, notCountedCount };
-  }, [enrollments, effectiveEnrollmentResult.effectStatusByEnrollmentId]);
+  const transcriptStats = useMemo<TranscriptStats>(() => {
+    const isPending = (enrollment: CourseEnrollment) =>
+      enrollment.score10 === null ||
+      enrollment.status === "pending" ||
+      enrollment.status === "in_progress";
+    const isFailed = (enrollment: CourseEnrollment) =>
+      enrollment.status === "failed" ||
+      (enrollment.score10 !== null && enrollment.score10 < 4);
+    const sumCredits = (attempts: CourseEnrollment[]) =>
+      attempts.reduce((total, enrollment) => total + enrollment.credits, 0);
+
+    const graded = enrollments.filter(
+      (enrollment) =>
+        enrollment.score10 !== null &&
+        effectiveEnrollmentResult.effectStatusByEnrollmentId[enrollment.id]
+          ?.isEffectiveForGpa === true,
+    );
+    const pending = enrollments.filter(isPending);
+    const failed = enrollments.filter(isFailed);
+    const retakeKindByEnrollmentId = buildRetakeKindByEnrollmentId(
+      enrollments,
+      retakeSettings,
+    );
+    const retakeOrImprovement = enrollments.filter(
+      (enrollment) =>
+        (retakeKindByEnrollmentId[enrollment.id] ?? null) !== null,
+    );
+    const excluded = enrollments.filter(
+      (enrollment) =>
+        enrollment.score10 !== null &&
+        effectiveEnrollmentResult.effectStatusByEnrollmentId[enrollment.id]
+          ?.isEffectiveForGpa === false,
+    );
+    const latestSummary = cumulativeGpaSummaries.at(-1);
+
+    return {
+      totalAttempts: enrollments.length,
+      gradedAttempts: graded.length,
+      pendingAttempts: pending.length,
+      pendingCredits: sumCredits(pending),
+      failedAttempts: failed.length,
+      failedCredits: sumCredits(failed),
+      retakeOrImprovementAttempts: retakeOrImprovement.length,
+      retakeOrImprovementCredits: sumCredits(retakeOrImprovement),
+      excludedAttempts: excluded.length,
+      excludedCredits: sumCredits(excluded),
+      effectiveCredits: latestSummary?.cumulativeEarnedCredits ?? 0,
+    };
+  }, [
+    cumulativeGpaSummaries,
+    effectiveEnrollmentResult.effectStatusByEnrollmentId,
+    enrollments,
+    retakeSettings,
+  ]);
 
   useEffect(() => {
     if (isHydrated && !profile) {
@@ -234,7 +275,7 @@ export default function TranscriptPage() {
 
       {dashboardDataStatus.isTranscriptSparse ? (
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100">
-          Dữ liệu bảng điểm thật còn ít. GPA hiện tại chỉ phản ánh các lượt học
+          Dữ liệu bảng điểm thật còn ít. GPA hiệu lực chỉ phản ánh các lượt học
           đã nhập.
         </div>
       ) : null}
@@ -253,11 +294,7 @@ export default function TranscriptPage() {
       {/* ─── Tình trạng bảng điểm ─── */}
       {enrollmentGroups.length > 0 ? (
         <TranscriptStatsStrip
-          totalEnrollments={enrollments.length}
-          pendingEnrollments={transcriptStats.pendingCount}
-          failedEnrollments={transcriptStats.failedCount}
-          retakeCourseCount={transcriptStats.retakeCount}
-          notCountedEnrollments={transcriptStats.notCountedCount}
+          stats={transcriptStats}
         />
       ) : null}
 

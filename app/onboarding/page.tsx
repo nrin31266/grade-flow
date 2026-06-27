@@ -352,8 +352,8 @@ export default function OnboardingPage() {
                     </p>
                   </div>
                   <p className="text-xs text-muted-foreground sm:text-right">
-                    Tổng: {graduationCredits || "—"} · Bắt buộc:{" "}
-                    {requiredGraduationCredits || "—"} · Tự chọn:{" "}
+                    Tổng: {graduationCredits || "—"}, Bắt buộc:{" "}
+                    {requiredGraduationCredits || "—"}, Tự chọn:{" "}
                     {electiveGraduationCredits || "—"}
                   </p>
                 </div>
@@ -361,7 +361,7 @@ export default function OnboardingPage() {
                 {currentRetakeSettings ? (
                   <div className="grid gap-3 rounded-md border bg-background p-3">
                     <div>
-                      <p className="text-sm font-medium">Học lại / cải thiện</p>
+                      <p className="text-sm font-medium">Học lại/cải thiện</p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         Các giá trị này cũng chỉ là autofill từ preset, có thể
                         sửa trước khi tạo hồ sơ.

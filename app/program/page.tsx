@@ -66,7 +66,7 @@ function DeleteProgramCourseDialog({
           <div className="rounded-lg border bg-muted/30 p-3 text-sm">
             <p className="font-medium">{course.name}</p>
             <p className="mt-1 text-muted-foreground">
-              {course.code ? `${course.code} · ` : ""}
+              {course.code ? `${course.code} - ` : ""}
               {course.credits} tín chỉ
             </p>
           </div>

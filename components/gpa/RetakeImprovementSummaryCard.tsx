@@ -42,7 +42,7 @@ export function RetakeImprovementSummaryCard({
     <section className="rounded-lg border bg-background shadow-sm">
       <div className="grid gap-3 px-4 py-3 lg:grid-cols-[minmax(220px,1fr)_auto_auto] lg:items-center">
         <div>
-          <h3 className="text-sm font-semibold">Học lại / cải thiện</h3>
+          <h3 className="text-sm font-semibold">Học lại/cải thiện</h3>
           <p className="mt-1 text-xs text-muted-foreground">
             Theo dõi lượt học lặp; tín chỉ đạt vẫn lấy theo lượt hiệu lực.
           </p>
@@ -52,15 +52,13 @@ export function RetakeImprovementSummaryCard({
           <div className="rounded-md border bg-muted/20 px-3 py-2">
             <p className="text-xs text-muted-foreground">Học lại</p>
             <p className="font-semibold">
-              {summary.retakeCourseCount} môn ·{" "}
-              {formatCredits(summary.retakeRawCredits)} TC
+              {summary.retakeCourseCount} môn ({formatCredits(summary.retakeRawCredits)} TC)
             </p>
           </div>
           <div className="rounded-md border bg-muted/20 px-3 py-2">
             <p className="text-xs text-muted-foreground">Cải thiện</p>
             <p className="font-semibold">
-              {summary.improvementCourseCount} môn ·{" "}
-              {formatCredits(summary.improvementRawCredits)} TC
+              {summary.improvementCourseCount} môn ({formatCredits(summary.improvementRawCredits)} TC)
             </p>
           </div>
         </div>

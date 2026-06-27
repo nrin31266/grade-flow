@@ -12,7 +12,7 @@ const features = [
     icon: GraduationCap,
     title: "Theo dõi bảng điểm thật",
     description:
-      "Nhập hoặc import bảng điểm theo từng học kỳ để xem GPA kỳ và GPA tích lũy.",
+      "Nhập hoặc import bảng điểm theo từng học kỳ để xem GPA kỳ và GPA hiệu lực.",
   },
   {
     icon: BarChart3,

@@ -11,6 +11,7 @@ import {
 } from "@/lib/grade-visuals";
 import { formatCredits, formatGpa, formatScore } from "@/lib/number-format";
 import type { CourseEnrollment, TermCode } from "@/types/academic";
+import type { RetakeKind } from "@/lib/retake-kind";
 
 type EnrollmentTermCardProps = {
   group: EnrollmentTermGroup;
@@ -36,6 +37,23 @@ export function EnrollmentTermCard({
 }: EnrollmentTermCardProps) {
   const { rawSummary } = group;
   const firstEnrollment = group.enrollments[0];
+  const retakeBadge: Record<
+    RetakeKind,
+    { label: string; tooltip: string }
+  > = {
+    retake: {
+      label: "Học lại",
+      tooltip: "Lượt học này thay thế lượt cũ chưa đạt theo cấu hình học vụ.",
+    },
+    improvement: {
+      label: "Cải thiện",
+      tooltip: "Lượt học này thay thế lượt cũ đã đạt để cải thiện điểm.",
+    },
+    retake_or_improvement: {
+      label: "Học lại/cải thiện",
+      tooltip: "Lượt học này thay thế một lượt cũ theo cấu hình học vụ.",
+    },
+  };
 
   return (
     <article className="rounded-lg border bg-background shadow-sm">
@@ -43,8 +61,8 @@ export function EnrollmentTermCard({
         <div>
           <h3 className="text-lg font-semibold">{group.actualTermName}</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {rawSummary.gradedEnrollmentCount}/{rawSummary.enrollmentCount} lượt học có điểm ·{" "}
-            {formatCredits(rawSummary.rawGpaCredits)} TC GPA ·{" "}
+            {rawSummary.gradedEnrollmentCount}/{rawSummary.enrollmentCount} lượt học có điểm, {" "}
+            {formatCredits(rawSummary.rawGpaCredits)} TC GPA, {" "}
             {formatCredits(rawSummary.rawEarnedCredits)} TC đạt
           </p>
         </div>
@@ -132,11 +150,8 @@ export function EnrollmentTermCard({
                     effectColor = "text-slate-500";
                   }
 
-                  // Flag indicators
-                  const flags: string[] = [];
-                  if (enrollment.isRetake) flags.push("Học lại");
-                  if (!enrollment.countsForGpa && !flags.includes("Học lại"))
-                    flags.push("Không tính GPA");
+                  const retakeKind = group.retakeKindByEnrollmentId[enrollment.id];
+                  const badge = retakeKind ? retakeBadge[retakeKind] : null;
 
                   return (
                     <tr
@@ -150,9 +165,17 @@ export function EnrollmentTermCard({
                       <td className="px-3 py-2.5">
                         <p className="font-medium leading-6">
                           {enrollment.name}
-                          {flags.length > 0 && (
+                          {badge && (
+                            <span
+                              title={badge.tooltip}
+                              className="ml-2 inline-flex rounded-full border border-sky-200 bg-sky-50 px-1.5 py-0.5 align-middle text-[10px] font-semibold leading-none text-sky-700 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300"
+                            >
+                              {badge.label}
+                            </span>
+                          )}
+                          {!enrollment.countsForGpa && !badge && (
                             <span className="ml-2 text-xs font-normal text-muted-foreground">
-                              ({flags.join(", ")})
+                              (Không tính GPA)
                             </span>
                           )}
                         </p>

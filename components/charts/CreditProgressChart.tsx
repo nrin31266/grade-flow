@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+
 import {
   BarChart,
   Bar,
@@ -18,14 +20,30 @@ import { ChartCard } from "@/components/charts/ChartCard";
 
 type CreditProgressChartProps = {
   data: CreditTrendPoint[];
+  effectiveCredits: number;
 };
 
-export function CreditProgressChart({ data }: CreditProgressChartProps) {
-  const validData = data.filter((d) => d.earnedCredits > 0);
+export function CreditProgressChart({
+  data,
+  effectiveCredits,
+}: CreditProgressChartProps) {
+  const creditChartStats = useMemo(() => {
+    const validData = data.filter((point) => point.earnedCredits > 0);
 
-  if (validData.length === 0) {
+    return {
+      validData,
+      latest: data.at(-1),
+      totalEarned: data.reduce(
+        (total, point) => total + point.earnedCredits,
+        0,
+      ),
+    };
+  }, [data]);
+  const { validData, latest, totalEarned } = creditChartStats;
+
+  if (validData.length === 0 || !latest) {
     return (
-      <ChartCard title="Tín chỉ đạt theo học kỳ" description="Số tín chỉ đạt được trong từng học kỳ.">
+      <ChartCard title="Tín chỉ đạt theo học kỳ" description="Số tín chỉ đạt trong từng học kỳ. TC hiệu lực đã xử lý học lại/cải thiện.">
         <div className="flex h-[240px] items-center justify-center rounded-lg border border-dashed bg-muted/40">
           <p className="text-sm text-muted-foreground">Chưa có đủ dữ liệu tín chỉ theo học kỳ.</p>
         </div>
@@ -33,24 +51,20 @@ export function CreditProgressChart({ data }: CreditProgressChartProps) {
     );
   }
 
-  const latest = validData[validData.length - 1];
-  const totalEarned = validData.reduce((s, d) => s + d.earnedCredits, 0);
-  const maxCredits = Math.max(...validData.map((d) => d.earnedCredits));
-
   return (
     <ChartCard
       title="Tín chỉ đạt theo học kỳ"
-      description="Số tín chỉ đạt được trong từng học kỳ."
+      description="Số tín chỉ đạt trong từng học kỳ. TC hiệu lực đã xử lý học lại/cải thiện."
       summary={
         <>
           <span className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-xs font-medium">
             Đã tích lũy: <span className="font-semibold">{formatCredits(Math.round(totalEarned))} tín chỉ</span>
           </span>
           <span className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-xs font-medium">
-            Kỳ gần nhất: <span className="font-semibold text-emerald-600">{formatCredits(Math.round(latest.earnedCredits))} tín chỉ</span>
+            TC hiệu lực: <span className="font-semibold text-blue-600">{formatCredits(effectiveCredits)} tín chỉ</span>
           </span>
-          <span className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-xs text-muted-foreground">
-            Kỳ cao nhất: {formatCredits(Math.round(maxCredits))} tín chỉ
+          <span className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-xs font-medium">
+            Kỳ gần nhất: <span className="font-semibold text-emerald-600">{formatCredits(Math.round(latest.earnedCredits))} tín chỉ</span>
           </span>
         </>
       }

@@ -177,7 +177,7 @@ export function CourseForm({ onAddEnrollment }: CourseFormProps) {
           <legend className="px-1 text-sm font-medium">Tùy chọn tính điểm</legend>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={countsForGpa} onChange={(event) => setCountsForGpa(event.target.checked)} /> Tính vào GPA</label>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={countsForGraduation} onChange={(event) => setCountsForGraduation(event.target.checked)} /> Tính vào tín chỉ tốt nghiệp</label>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={isRetake} onChange={(event) => setIsRetake(event.target.checked)} /> Học lại / cải thiện</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={isRetake} onChange={(event) => setIsRetake(event.target.checked)} /> Học lại/cải thiện</label>
         </fieldset>
       </div>
 

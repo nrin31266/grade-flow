@@ -1,56 +1,67 @@
-type TranscriptStatsStripProps = {
-  totalEnrollments: number;
-  pendingEnrollments: number;
-  failedEnrollments: number;
-  retakeCourseCount: number;
-  notCountedEnrollments: number;
+import { formatCredits } from "@/lib/number-format";
+
+export type TranscriptStats = {
+  totalAttempts: number;
+  gradedAttempts: number;
+  pendingAttempts: number;
+  pendingCredits: number;
+  failedAttempts: number;
+  failedCredits: number;
+  retakeOrImprovementAttempts: number;
+  retakeOrImprovementCredits: number;
+  excludedAttempts: number;
+  excludedCredits: number;
+  effectiveCredits: number;
 };
 
-export function TranscriptStatsStrip({
-  totalEnrollments,
-  pendingEnrollments,
-  failedEnrollments,
-  retakeCourseCount,
-  notCountedEnrollments,
-}: TranscriptStatsStripProps) {
-  const stats = [
+type TranscriptStatsStripProps = {
+  stats: TranscriptStats;
+};
+
+export function TranscriptStatsStrip({ stats }: TranscriptStatsStripProps) {
+  const items = [
     {
-      label: "Tổng lượt học",
-      value: totalEnrollments,
+      label: "Tổng lượt đăng ký",
+      value: `${stats.totalAttempts}`,
       color: "text-foreground",
     },
     {
+      label: "Đã có điểm",
+      value: `${stats.gradedAttempts} (${formatCredits(stats.effectiveCredits)} TC hiệu lực)`,
+      color: "text-emerald-600 dark:text-emerald-400",
+    },
+    {
       label: "Chờ điểm",
-      value: pendingEnrollments,
+      value: `${stats.pendingAttempts} (${formatCredits(stats.pendingCredits)} TC)`,
       color: "text-amber-600 dark:text-amber-400",
     },
     {
       label: "Chưa đạt",
-      value: failedEnrollments,
+      value: `${stats.failedAttempts} (${formatCredits(stats.failedCredits)} TC)`,
       color: "text-rose-600 dark:text-rose-400",
     },
     {
       label: "Học lại/cải thiện",
-      value: retakeCourseCount,
+      value: `${stats.retakeOrImprovementAttempts} (${formatCredits(stats.retakeOrImprovementCredits)} TC)`,
       color: "text-blue-600 dark:text-blue-400",
     },
     {
       label: "Không tính GPA",
-      value: notCountedEnrollments,
+      value: `${stats.excludedAttempts} (${formatCredits(stats.excludedCredits)} TC)`,
       color: "text-slate-500 dark:text-slate-400",
     },
   ];
 
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {stats.map((stat) => (
+    <div className="flex flex-wrap gap-2.5">
+      {items.map((item) => (
         <div
-          key={stat.label}
-          className="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-xs shadow-sm"
+          key={item.label}
+          className="inline-flex items-center gap-2 rounded-lg border bg-background px-3.5 py-2 text-sm shadow-sm"
         >
-          <span className="text-muted-foreground">{stat.label}:</span>
-          <span className={`font-semibold tabular-nums ${stat.color}`}>
-            {stat.value}
+          <span className="text-muted-foreground">{item.label}:</span>
+          <span className={`font-semibold tabular-nums ${item.color}`}>
+            {item.value}
           </span>
         </div>
       ))}

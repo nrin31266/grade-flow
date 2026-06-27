@@ -386,7 +386,7 @@ export function AcademicRulesDialog({
 
           <section className="grid gap-4 rounded-lg border bg-muted/20 p-4">
             <div>
-              <h3 className="font-semibold">Học lại / cải thiện</h3>
+              <h3 className="font-semibold">Học lại/cải thiện</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 Với preset VKU, GradeFlow mặc định lấy điểm cao nhất khi có
                 nhiều lượt cùng môn.

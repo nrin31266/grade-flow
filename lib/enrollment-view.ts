@@ -9,6 +9,10 @@ import {
 import type { EffectiveEnrollmentResult } from "@/lib/effective-enrollments";
 import type { CourseEnrollment } from "@/types/academic";
 import type { RetakeSettings } from "@/types/profile";
+import {
+  buildRetakeKindByEnrollmentId,
+  type RetakeKind,
+} from "@/lib/retake-kind";
 
 export type EnrollmentTermGroup = {
   actualTermId: string;
@@ -17,6 +21,7 @@ export type EnrollmentTermGroup = {
   enrollments: CourseEnrollment[];
   rawSummary: RawTermSummary;
   effectiveSummary: CumulativeGpaSummary;
+  retakeKindByEnrollmentId: Record<string, RetakeKind | null>;
 };
 
 export function groupEnrollmentsWithSummaries(
@@ -29,6 +34,10 @@ export function groupEnrollmentsWithSummaries(
     settings,
   );
   const rawSummaries = calculateRawTermSummaries(enrollments);
+  const retakeKindByEnrollmentId = buildRetakeKindByEnrollmentId(
+    enrollments,
+    settings,
+  );
   const summariesByTermId = new Map(
     summaries.map((summary) => [summary.actualTermId, summary]),
   );
@@ -52,6 +61,7 @@ export function groupEnrollmentsWithSummaries(
         ),
         rawSummary,
         effectiveSummary: summary,
+        retakeKindByEnrollmentId,
       };
     })
     .filter((group): group is EnrollmentTermGroup => group !== null)

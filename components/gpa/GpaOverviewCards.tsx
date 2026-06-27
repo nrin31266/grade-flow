@@ -16,12 +16,12 @@ export function GpaOverviewCards({
     {
       label: "GPA hệ 4",
       value: formatGpa(summary.cumulativeGpa4),
-      sub: "GPA tích lũy từ các lượt học hiệu lực",
+      sub: "GPA hiệu lực sau học lại/cải thiện",
     },
     {
       label: "GPA hệ 10",
       value: formatGpa(summary.cumulativeGpa10),
-      sub: "GPA tích lũy từ các lượt học hiệu lực",
+      sub: "GPA hiệu lực sau học lại/cải thiện",
     },
     {
       label: "Tín chỉ đã đạt",

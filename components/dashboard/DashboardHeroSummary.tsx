@@ -5,11 +5,28 @@ import { formatCredits, formatGpa } from "@/lib/number-format";
 import { getGpa4Classification } from "@/lib/gpa-classification";
 import type { RetakeSettings, UserProfile } from "@/types/profile";
 
+export type RetakeImprovementHeroSummary = {
+  effectiveCredits: number;
+  retakeCredits: number;
+  retakePercent: number | null;
+  retakeWarningLevel: "normal" | "warning" | "danger";
+  improvementCredits: number;
+  improvementPercent: number | null;
+  improvementWarningLevel: "normal" | "warning" | "danger";
+  uncertainCredits: number;
+  uncertainPercent: number | null;
+};
+
+function formatPercent(value: number): string {
+  return `${Number(value.toFixed(2))}%`;
+}
+
 type DashboardHeroSummaryProps = {
   profile: UserProfile;
   overallSummary: OverallGpaSummary;
   graduationCredits?: number;
   retakeSettings: RetakeSettings;
+  retakeImprovementSummary: RetakeImprovementHeroSummary;
 };
 
 export function DashboardHeroSummary({
@@ -17,8 +34,9 @@ export function DashboardHeroSummary({
   overallSummary,
   graduationCredits,
   retakeSettings,
+  retakeImprovementSummary,
 }: DashboardHeroSummaryProps) {
-  const { cumulativeGpa4, cumulativeGpa10, earnedGraduationCredits, gpaCredits } =
+  const { cumulativeGpa4, cumulativeGpa10, earnedGraduationCredits } =
     overallSummary;
 
   const targetCredits = graduationCredits ?? profile.graduationCredits;
@@ -76,7 +94,7 @@ export function DashboardHeroSummary({
         {/* ─── Cột giữa: GPA ─── */}
         <div className="flex flex-col justify-center">
           <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            GPA tích lũy
+            GPA hiệu lực
           </p>
           <div className="mt-1">
             {cumulativeGpa4 !== null ? (
@@ -107,9 +125,50 @@ export function DashboardHeroSummary({
           >
             {classification.label}
           </span>
-          <p className="mt-1 text-[11px] text-muted-foreground/60">
-            Dựa trên {gpaCredits} lượt học được tính GPA
-          </p>
+          <div
+            title="TC hiệu lực là tín chỉ sau khi xử lý học lại/cải thiện. Tỷ lệ học lại/cải thiện được tính trên tổng tín chỉ tốt nghiệp."
+            className="mt-2 flex flex-wrap items-center gap-1.5 text-xs"
+          >
+            <span className="font-semibold text-slate-600 dark:text-slate-300">
+              {formatCredits(retakeImprovementSummary.effectiveCredits)} TC hiệu lực
+            </span>
+            <span
+              className={`rounded-md border px-1.5 py-0.5 font-medium ${
+                retakeImprovementSummary.retakeWarningLevel === "danger"
+                  ? "border-orange-300/70 bg-orange-500/5 text-orange-700/90 dark:border-orange-800/70 dark:bg-orange-950/20 dark:text-orange-300/90"
+                  : retakeImprovementSummary.retakeWarningLevel === "warning"
+                    ? "border-amber-300/70 bg-amber-500/5 text-amber-700/90 dark:border-amber-800/70 dark:bg-amber-950/20 dark:text-amber-300/90"
+                    : "border-rose-200/60 bg-rose-500/5 text-rose-700/80 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-300/80"
+              }`}
+            >
+              Học lại {formatCredits(retakeImprovementSummary.retakeCredits)} TC
+              {retakeImprovementSummary.retakePercent !== null
+                ? ` (${formatPercent(retakeImprovementSummary.retakePercent)})`
+                : ""}
+            </span>
+            <span
+              className={`rounded-md border px-1.5 py-0.5 font-medium ${
+                retakeImprovementSummary.improvementWarningLevel === "danger"
+                  ? "border-orange-300/70 bg-orange-500/5 text-orange-700/90 dark:border-orange-800/70 dark:bg-orange-950/20 dark:text-orange-300/90"
+                  : retakeImprovementSummary.improvementWarningLevel === "warning"
+                    ? "border-amber-300/70 bg-amber-500/5 text-amber-700/90 dark:border-amber-800/70 dark:bg-amber-950/20 dark:text-amber-300/90"
+                    : "border-violet-200/60 bg-violet-500/5 text-violet-700/80 dark:border-violet-900/60 dark:bg-violet-950/20 dark:text-violet-300/80"
+              }`}
+            >
+              Cải thiện {formatCredits(retakeImprovementSummary.improvementCredits)} TC
+              {retakeImprovementSummary.improvementPercent !== null
+                ? ` (${formatPercent(retakeImprovementSummary.improvementPercent)})`
+                : ""}
+            </span>
+            {retakeImprovementSummary.uncertainCredits > 0 && (
+              <span className="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-300">
+                Học lại/cải thiện {formatCredits(retakeImprovementSummary.uncertainCredits)} TC
+                {retakeImprovementSummary.uncertainPercent !== null
+                  ? ` (${formatPercent(retakeImprovementSummary.uncertainPercent)})`
+                  : ""}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* ─── Cột phải: Tín chỉ ─── */}
@@ -159,7 +218,7 @@ export function DashboardHeroSummary({
       {/* ─── Strip cấu hình ─── */}
       <div className="mt-4 border-t border-sky-100 pt-2 dark:border-sky-900/50">
         <p className="text-[11px] text-muted-foreground/60">
-          Cấu hình đang dùng: {profile.schoolShortName} · {policyLabel} khi có học lại/cải thiện
+          Cấu hình đang dùng: {profile.schoolShortName}, {policyLabel} khi có học lại/cải thiện
         </p>
       </div>
     </div>
